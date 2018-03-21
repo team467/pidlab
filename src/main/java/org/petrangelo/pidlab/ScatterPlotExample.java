@@ -43,14 +43,14 @@ public class ScatterPlotExample extends JFrame {
     XYSeries series1 = new XYSeries("Motor speed");
     MotorModel model = new MotorModel(100, 15);
     for (int i = 0; i < 100; i++) {
-    	double speed = model.step(1.0);
-		System.out.println(i + "," + speed);
-    	series1.add(i, speed);
+    	model.step(1.0);
+		System.out.println(i + "," + model.getSpeed());
+    	series1.add(i, model.getSpeed());
     }
     for (int i = 100; i < 200; i++) {
-    	double speed = model.step(0.5);
-		System.out.println(i + "," + speed);
-    	series1.add(i, speed);
+    	model.step(0.5);
+		System.out.println(i + "," + model.getSpeed());
+    	series1.add(i, model.getSpeed());
     }
 
     dataset.addSeries(series1);

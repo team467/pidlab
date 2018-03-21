@@ -1,25 +1,47 @@
 package org.petrangelo.pidlab;
 
+/**
+ * MotorModel simulates a motor as its input voltage is changed over time.
+ */
 public class MotorModel {
 	private final double Kv;
 	private final double T0;
-	private double currentSpeed;
+
+	private double currentSpeed = 0.0;
+	private double currentPosition = 0.0;
 	
+	/**
+	 * Create a MotorModel object.
+	 * 
+	 * @param Kv motor gain, or the maximum speed of the motor at full input voltage
+	 * @param T0 time constant for the motor, or the time it takes for the motor to
+	 * 		  reach ~62% of the final speed at a given input voltage
+	 */
 	public MotorModel(double Kv, double T0) {
 		this.Kv = Kv;
 		this.T0 = T0;
 	}
-	
-	public double step(double Vin) {
-		double newSpeed = currentSpeed + (Kv * Vin - currentSpeed) / T0;
-		currentSpeed = newSpeed;
-		return currentSpeed;
+
+	/**
+	 * Step the motor forward by one time increment.
+	 * @param Vin the input voltage during this time increment
+	 */
+	public void step(double Vin) {
+		currentSpeed += (Kv * Vin - currentSpeed) / T0;
+		currentPosition += currentSpeed;
 	}
 	
-	public static void main(String[] args) {
-		MotorModel model = new MotorModel(100, 20);
-		for (int i = 0; i < 100; i++) {
-			System.out.println(i + "," + model.step(1));
-		}
+	/**
+	 * Get the current speed of the motor in ticks/sec.
+	 */
+	public double getSpeed() {
+		return currentSpeed;
+	}
+
+	/**
+	 * Get the current position of the motor in ticks.
+	 */
+	public double getPosition() {
+		return currentPosition;
 	}
 }
