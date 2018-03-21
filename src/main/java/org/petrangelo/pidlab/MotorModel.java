@@ -4,12 +4,10 @@ package org.petrangelo.pidlab;
  * MotorModel simulates a motor as its input voltage is changed over time.
  */
 public class MotorModel {
-	public final static double STEP_TIME_SEC = 0.020;
-
 	private final double Kv;
 	private final double T0;
 
-	// Current speed in ticks/sec.
+	// Current speed in ticks/second.
 	private double currentSpeed = 0.0;
 
 	// Current position in ticks.
@@ -28,16 +26,35 @@ public class MotorModel {
 	}
 
 	/**
-	 * Step the motor forward by one time increment.
-	 * @param Vin the input voltage during this time increment
+	 * Adjust for friction be reducing the input value by 0.1 (closer to zero).
 	 */
-	public void step(double Vin) {
-		currentSpeed += STEP_TIME_SEC * (Kv * Vin - currentSpeed) / T0;
-		currentPosition += STEP_TIME_SEC * currentSpeed;
+	private double adjustForFriction(double drive) {
+		if (drive > 0) {
+			return Math.max(0.0, drive - Constants.MOTOR_FRICTION);
+		} else {
+			return Math.min(0.0, drive + Constants.MOTOR_FRICTION);
+		}
 	}
 	
 	/**
-	 * Get the current speed of the motor in ticks/sec.
+	 * Step the motor forward by one time increment.
+	 * 
+	 * @param drive the input signal during this time increment, |drive| <= 1.0
+	 */
+	public void step(double drive) {
+		// Cap the drive value to +- 1.0.
+		drive = Math.min(drive,  1.0);
+		drive = Math.max(drive, -1.0);
+
+		drive = adjustForFriction(drive);
+		
+		// Update motor state.
+		currentSpeed += Constants.STEP_TIME_SEC * (Kv * drive - currentSpeed) / T0;
+		currentPosition += Constants.STEP_TIME_SEC * currentSpeed;
+	}
+	
+	/**
+	 * Get the current speed of the motor in ticks/second.
 	 */
 	public double getSpeed() {
 		return currentSpeed;
