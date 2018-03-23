@@ -1,5 +1,6 @@
 package org.shrewsburyrobotics.pidlab;
 
+import java.awt.Color;
 import java.util.Formatter;
 
 import javax.swing.JFrame;
@@ -24,28 +25,29 @@ public class PIDResponseChart extends JFrame {
 		super(title);
 
 		// Create dataset.
-		XYDataset dataset = createDataset();
+        final double targetDistance = 500.0;
+		XYDataset dataset = createDataset(targetDistance);
 
 		// Create chart.
 		boolean wantLegend = true;
 		boolean wantTooltips = true;
 		boolean wantURLs = false;
-		JFreeChart chart = ChartFactory.createScatterPlot(
-				"Motor Simulation", "Time (sec)", "", dataset,
+		JFreeChart chart = ChartFactory.createXYLineChart(
+				"PID Response", "Time (sec)", "", dataset,
 				PlotOrientation.VERTICAL, wantLegend, wantTooltips, wantURLs);
+        chart.getPlot().setBackgroundPaint(Color.WHITE);
 
-		// Create panel in which to display the chart.
+        // Create panel in which to display the chart.
 		ChartPanel panel = new ChartPanel(chart);
 		setContentPane(panel);
 	}
 
-	private XYDataset createDataset() {
-        double plotTimeSecs = 12.0;
+	private XYDataset createDataset(double targetDistance) {
+        double plotTimeSecs = 20.0;
         int numTicks = (int)(plotTimeSecs / Constants.STEP_TIME_SEC);
 
-		final double targetDistance = 500.0;
 		MotorModel motor = new MotorModel(1000, 3.0, 0.2);
-		PIDController controller = new PIDController(0.0065, 0.0, 0.005);
+        PIDController controller = new PIDController(0.00015, 0.00000, 0.000);
 
 		XYSeries speedSeries = new XYSeries("Motor speed");
 		XYSeries positionSeries = new XYSeries("Motor position");
