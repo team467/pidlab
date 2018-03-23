@@ -41,7 +41,7 @@ public class PIDResponseChart extends JFrame {
 
 	private XYDataset createDataset() {
 		final double targetDistance = 100.0;
-		MotorModel motor = new MotorModel(1000, 2);
+		MotorModel motor = new MotorModel(1000, 2, 0.0);
 		PIDController controller = new PIDController(0.0060, 0.0, 0.015);
 
 		XYSeries speedSeries = new XYSeries("Motor speed");

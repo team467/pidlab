@@ -37,7 +37,7 @@ public class ImpulseResponseChart extends JFrame {
 	}
 
 	private XYDataset createDataset() {
-		MotorModel model = new MotorModel(1000, 2);
+        MotorModel model = new MotorModel(1000, 1.0, 1.0);
 
 		XYSeries speedSeries = new XYSeries("Motor speed");
 		XYSeries positionSeries = new XYSeries("Motor position");

@@ -1,12 +1,18 @@
 package org.shrewsburyrobotics.pidlab.model;
 
+import java.util.Collections;
+import java.util.LinkedList;
+
 /**
  * MotorModel simulates a motor as its input voltage is changed over time.
  */
 public class MotorModel {
-	private final double Kv;
-	private final double T0;
+	private final double gain; // Kp
+	private final double timeConstant; // Tp
+	private final double deadTime; // theta P
 
+	private final LinkedList<Double> driveMemory;
+	
 	// Current speed in ticks/second.
 	private double currentSpeed = 0.0;
 
@@ -16,13 +22,18 @@ public class MotorModel {
 	/**
 	 * Create a MotorModel object.
 	 * 
-	 * @param Kv motor gain, or the maximum speed of the motor at full input voltage, in ticks/second
-	 * @param T0 time constant for the motor, or the time it takes for the motor to
-	 * 		  reach ~62% of the final speed at a given input voltage, in seconds
+	 * @param gain motor gain (Kp), or the maximum speed of the motor at full power, in ticks/second
+     * @param timeConstant time constant (Tp) for the motor, or the time it takes for the motor to
+     *        reach ~62% of the final speed at a given input, in seconds
+     * @param deadTime dead time (theta P) is the time between a change in input and when a measurable
+     *        response occurs, in seconds
 	 */
-	public MotorModel(double Kv, double T0) {
-		this.Kv = Kv;
-		this.T0 = T0;
+	public MotorModel(double gain, double timeConstant, double deadTime) {
+		this.gain = gain;
+		this.timeConstant = timeConstant;
+		this.deadTime = deadTime;
+		int numDeadTimeTicks = (int)(deadTime / Constants.STEP_TIME_SEC);
+		driveMemory = new LinkedList<Double>(Collections.nCopies(numDeadTimeTicks, 0.0));
 	}
 
 	/**
@@ -42,6 +53,10 @@ public class MotorModel {
 	 * @param drive the input signal during this time increment, |drive| <= 1.0
 	 */
 	public void step(double drive) {
+	    // Add this drive value to the memory, then extract the oldest one to use for this step.
+	    driveMemory.offerFirst(drive);
+	    drive = driveMemory.pollLast();
+	    
 		// Cap the drive value to +- 1.0.
 		drive = Math.min(drive,  1.0);
 		drive = Math.max(drive, -1.0);
@@ -49,7 +64,7 @@ public class MotorModel {
 		drive = adjustForFriction(drive);
 		
 		// Update motor state.
-		currentSpeed += Constants.STEP_TIME_SEC * (Kv * drive - currentSpeed) / T0;
+		currentSpeed += Constants.STEP_TIME_SEC * (gain * drive - currentSpeed) / timeConstant;
 		currentPosition += Constants.STEP_TIME_SEC * currentSpeed;
 	}
 	
@@ -65,5 +80,10 @@ public class MotorModel {
 	 */
 	public double getPosition() {
 		return currentPosition;
+	}
+	
+	@Override
+	public String toString() {
+	    return "MotorModel[Kp=" + gain + ", Tp=" + timeConstant + ", Op=" + deadTime + "]";
 	}
 }
