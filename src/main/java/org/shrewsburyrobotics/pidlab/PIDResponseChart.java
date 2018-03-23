@@ -43,9 +43,9 @@ public class PIDResponseChart extends JFrame {
         double plotTimeSecs = 12.0;
         int numTicks = (int)(plotTimeSecs / Constants.STEP_TIME_SEC);
 
-		final double targetDistance = 100.0;
-		MotorModel motor = new MotorModel(1000, 2, 0.0);
-		PIDController controller = new PIDController(0.0060, 0.0, 0.015);
+		final double targetDistance = 500.0;
+		MotorModel motor = new MotorModel(1000, 3.0, 0.2);
+		PIDController controller = new PIDController(0.0065, 0.0, 0.005);
 
 		XYSeries speedSeries = new XYSeries("Motor speed");
 		XYSeries positionSeries = new XYSeries("Motor position");
