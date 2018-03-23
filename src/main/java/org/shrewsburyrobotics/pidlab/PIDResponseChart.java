@@ -40,6 +40,9 @@ public class PIDResponseChart extends JFrame {
 	}
 
 	private XYDataset createDataset() {
+        double plotTimeSecs = 12.0;
+        int numTicks = (int)(plotTimeSecs / Constants.STEP_TIME_SEC);
+
 		final double targetDistance = 100.0;
 		MotorModel motor = new MotorModel(1000, 2, 0.0);
 		PIDController controller = new PIDController(0.0060, 0.0, 0.015);
@@ -50,7 +53,7 @@ public class PIDResponseChart extends JFrame {
 		
 		controller.setError(targetDistance);
 		try (Formatter formatter = new Formatter(System.out)) {;
-			for (int i = 0; i < 600; i++) {
+			for (int i = 0; i < numTicks; i++) {
 				double drive = controller.calculate(motor.getPosition(), motor.getSpeed(),
 						Constants.STEP_TIME_SEC, targetDistance);
 				motor.step(drive);

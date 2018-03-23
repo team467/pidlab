@@ -37,16 +37,19 @@ public class ImpulseResponseChart extends JFrame {
 	}
 
 	private XYDataset createDataset() {
+		double plotTimeSecs = 10.0;
+		int numTicks = (int)(plotTimeSecs / Constants.STEP_TIME_SEC);
+
         MotorModel model = new MotorModel(1000, 1.0, 1.0);
 
 		XYSeries speedSeries = new XYSeries("Motor speed");
 		XYSeries positionSeries = new XYSeries("Motor position");
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < numTicks/2; i++) {
 			model.step(1.0);
 			speedSeries.add(i * Constants.STEP_TIME_SEC, model.getSpeed());
 			positionSeries.add(i * Constants.STEP_TIME_SEC, model.getPosition());
 		}
-		for (int i = 100; i < 200; i++) {
+		for (int i = numTicks/2; i < numTicks; i++) {
 			model.step(0.0);
 			speedSeries.add(i * Constants.STEP_TIME_SEC, model.getSpeed());
 			positionSeries.add(i * Constants.STEP_TIME_SEC, model.getPosition());
