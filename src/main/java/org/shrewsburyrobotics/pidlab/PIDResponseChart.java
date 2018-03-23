@@ -3,6 +3,8 @@ package org.shrewsburyrobotics.pidlab;
 import java.util.Formatter;
 
 import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
@@ -19,12 +21,21 @@ import org.shrewsburyrobotics.pidlab.model.PIDController;
 
 public class PIDResponseChart extends JFrame {
 	private static final long serialVersionUID = 1L;
+	private JPanel mainPanel;
+	private JPanel UIPanel;
+
+	private JSlider pSlider;
+	private JSlider iSlider;
+	private JSlider dSlider;
 
 	public PIDResponseChart(String title) {
 		super(title);
 
 		// Create dataset.
 		XYDataset dataset = createDataset();
+
+		mainPanel = new JPanel();
+		UIPanel = new JPanel();
 
 		// Create chart.
 		boolean wantLegend = true;
@@ -35,13 +46,14 @@ public class PIDResponseChart extends JFrame {
 				PlotOrientation.VERTICAL, wantLegend, wantTooltips, wantURLs);
 
 		// Create panel in which to display the chart.
-		ChartPanel panel = new ChartPanel(chart);
-		setContentPane(panel);
+		ChartPanel chartPanel = new ChartPanel(chart);
+		mainPanel.add(chartPanel);
+		setContentPane(mainPanel);
 	}
 
 	private XYDataset createDataset() {
-        double plotTimeSecs = 12.0;
-        int numTicks = (int)(plotTimeSecs / Constants.STEP_TIME_SEC);
+		double plotTimeSecs = 12.0;
+		int numTicks = (int)(plotTimeSecs / Constants.STEP_TIME_SEC);
 
 		final double targetDistance = 100.0;
 		MotorModel motor = new MotorModel(1000, 2, 0.0);
@@ -50,21 +62,21 @@ public class PIDResponseChart extends JFrame {
 		XYSeries speedSeries = new XYSeries("Motor speed");
 		XYSeries positionSeries = new XYSeries("Motor position");
 		XYSeries driveSeries = new XYSeries("Drive");
-		
+
 		controller.setError(targetDistance);
 		try (Formatter formatter = new Formatter(System.out)) {;
-			for (int i = 0; i < numTicks; i++) {
-				double drive = controller.calculate(motor.getPosition(), motor.getSpeed(),
-						Constants.STEP_TIME_SEC, targetDistance);
-				motor.step(drive);
+		for (int i = 0; i < numTicks; i++) {
+			double drive = controller.calculate(motor.getPosition(), motor.getSpeed(),
+					Constants.STEP_TIME_SEC, targetDistance);
+			motor.step(drive);
 
-				final double time = i * Constants.STEP_TIME_SEC;
-				speedSeries.add(time, motor.getSpeed());
-				positionSeries.add(time, motor.getPosition());
-				driveSeries.add(time, drive*100);
+			final double time = i * Constants.STEP_TIME_SEC;
+			speedSeries.add(time, motor.getSpeed());
+			positionSeries.add(time, motor.getPosition());
+			driveSeries.add(time, drive*100);
 
-				formatter.format("%f,%f,%f,%f\n", time, drive, motor.getSpeed(), motor.getPosition());
-			}
+			formatter.format("%f,%f,%f,%f\n", time, drive, motor.getSpeed(), motor.getPosition());
+		}
 		}
 
 		XYSeriesCollection dataset = new XYSeriesCollection();
