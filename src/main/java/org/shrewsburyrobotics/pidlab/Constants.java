@@ -1,4 +1,4 @@
-package org.petrangelo.pidlab;
+package org.shrewsburyrobotics.pidlab;
 
 public class Constants {
 	/**

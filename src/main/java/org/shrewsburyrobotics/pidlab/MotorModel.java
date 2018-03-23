@@ -1,4 +1,4 @@
-package org.petrangelo.pidlab;
+package org.shrewsburyrobotics.pidlab;
 
 /**
  * MotorModel simulates a motor as its input voltage is changed over time.

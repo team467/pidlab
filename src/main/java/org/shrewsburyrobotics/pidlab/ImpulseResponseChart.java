@@ -1,4 +1,4 @@
-package org.petrangelo.pidlab;
+package org.shrewsburyrobotics.pidlab;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
