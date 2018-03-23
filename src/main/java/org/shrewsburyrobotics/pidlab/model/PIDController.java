@@ -1,4 +1,4 @@
-package org.shrewsburyrobotics.pidlab;
+package org.shrewsburyrobotics.pidlab.model;
 
 /**
  * PIDController implements a PID control function.
@@ -31,7 +31,7 @@ public class PIDController {
 		this.error = error;
 	}
 	
-	double calculate(double currentPosition, double currentSpeed, double stepTime, double targetPosition) {
+	public double calculate(double currentPosition, double currentSpeed, double stepTime, double targetPosition) {
 		final double newError = targetPosition - currentPosition;
 		
 		

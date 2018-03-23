@@ -13,6 +13,9 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.shrewsburyrobotics.pidlab.model.Constants;
+import org.shrewsburyrobotics.pidlab.model.MotorModel;
+import org.shrewsburyrobotics.pidlab.model.PIDController;
 
 public class PIDResponseChart extends JFrame {
 	private static final long serialVersionUID = 1L;
