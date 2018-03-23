@@ -1,12 +1,18 @@
 package org.shrewsburyrobotics.pidlab;
 
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Formatter;
 
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JSlider;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
+import javax.swing.border.Border;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -19,14 +25,20 @@ import org.shrewsburyrobotics.pidlab.model.Constants;
 import org.shrewsburyrobotics.pidlab.model.MotorModel;
 import org.shrewsburyrobotics.pidlab.model.PIDController;
 
-public class PIDResponseChart extends JFrame {
+public class PIDResponseChart extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 1L;
 	private JPanel mainPanel;
-	private JPanel UIPanel;
+	private JPanel pidPanel;
+	private JPanel pPanel;
+	private JPanel iPanel;
+	private JPanel dPanel;
 
-	private JSlider pSlider;
-	private JSlider iSlider;
-	private JSlider dSlider;
+	private Border lineBorder;
+
+	private JTextField pField;
+	private JTextField iField;
+	private JTextField dField;
+	private JButton runButton;
 
 	public PIDResponseChart(String title) {
 		super(title);
@@ -34,8 +46,31 @@ public class PIDResponseChart extends JFrame {
 		// Create dataset.
 		XYDataset dataset = createDataset();
 
+		lineBorder = BorderFactory.createLineBorder(Color.BLACK);
 		mainPanel = new JPanel();
-		UIPanel = new JPanel();
+		pidPanel = new JPanel();
+		pidPanel.setBorder(BorderFactory.createTitledBorder(lineBorder, "PID Controls"));
+
+		pField = new JTextField(4);
+		pField.setName("P");
+
+		iField = new JTextField(4);
+		iField.setName("I");
+
+		dField = new JTextField(4);
+		dField.setName("D");
+
+		pPanel = initPIDPanel("P", pField);
+		iPanel = initPIDPanel("I", iField);
+		dPanel = initPIDPanel("D", dField);
+
+		runButton = new JButton("Run");
+		runButton.addActionListener(this);
+
+		pidPanel.add(pPanel);
+		pidPanel.add(iPanel);
+		pidPanel.add(dPanel);
+		pidPanel.add(runButton);
 
 		// Create chart.
 		boolean wantLegend = true;
@@ -48,7 +83,15 @@ public class PIDResponseChart extends JFrame {
 		// Create panel in which to display the chart.
 		ChartPanel chartPanel = new ChartPanel(chart);
 		mainPanel.add(chartPanel);
+		mainPanel.add(pidPanel);
 		setContentPane(mainPanel);
+	}
+
+	private JPanel initPIDPanel(String name, JTextField field) {
+		JPanel panel = new JPanel();
+		panel.setBorder(BorderFactory.createTitledBorder(lineBorder, name));
+		panel.add(field);
+		return panel;
 	}
 
 	private XYDataset createDataset() {
@@ -64,19 +107,19 @@ public class PIDResponseChart extends JFrame {
 		XYSeries driveSeries = new XYSeries("Drive");
 
 		controller.setError(targetDistance);
-		try (Formatter formatter = new Formatter(System.out)) {;
-		for (int i = 0; i < numTicks; i++) {
-			double drive = controller.calculate(motor.getPosition(), motor.getSpeed(),
-					Constants.STEP_TIME_SEC, targetDistance);
-			motor.step(drive);
+		try (Formatter formatter = new Formatter(System.out)) {
+			for (int i = 0; i < numTicks; i++) {
+				double drive = controller.calculate(motor.getPosition(), motor.getSpeed(),
+						Constants.STEP_TIME_SEC, targetDistance);
+				motor.step(drive);
 
-			final double time = i * Constants.STEP_TIME_SEC;
-			speedSeries.add(time, motor.getSpeed());
-			positionSeries.add(time, motor.getPosition());
-			driveSeries.add(time, drive*100);
+				final double time = i * Constants.STEP_TIME_SEC;
+				speedSeries.add(time, motor.getSpeed());
+				positionSeries.add(time, motor.getPosition());
+				driveSeries.add(time, drive*100);
 
-			formatter.format("%f,%f,%f,%f\n", time, drive, motor.getSpeed(), motor.getPosition());
-		}
+				formatter.format("%f,%f,%f,%f\n", time, drive, motor.getSpeed(), motor.getPosition());
+			}
 		}
 
 		XYSeriesCollection dataset = new XYSeriesCollection();
@@ -95,5 +138,13 @@ public class PIDResponseChart extends JFrame {
 			example.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 			example.setVisible(true);
 		});
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		if (e.getSource() == runButton) {
+			System.out.println("Running Simulation");
+			// TODO Run the simulation here
+		}
 	}
 }
