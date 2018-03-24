@@ -2,6 +2,7 @@ package org.shrewsburyrobotics.pidlab;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Formatter;
@@ -58,6 +59,7 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 		UIPanel.add(createMotorPanel()); 
 		UIPanel.add(createPidPanel());
 		UIPanel.add(createPlotPanel());
+		UIPanel.setMaximumSize(new Dimension(800, 100));
 
 		// Create the main panel containing all of the other panels.
 		JPanel mainPanel = new JPanel();
