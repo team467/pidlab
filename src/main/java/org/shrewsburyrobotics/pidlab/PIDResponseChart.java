@@ -35,18 +35,18 @@ public class PIDResponseChart extends JFrame {
 	private JTextField pField = new JTextField("0.0060", 6);
 	private JTextField iField = new JTextField("0.0", 6);
 	private JTextField dField = new JTextField("0.015", 6);
-    private JTextField targetField = new JTextField("100", 4);
+	private JTextField targetField = new JTextField("100", 4);
 
-    private MotorModel motor = new MotorModel(Double.parseDouble(gainField.getText()),
-            								  Double.parseDouble(timeField.getText()),
-            								  Double.parseDouble(deadField.getText()));
+	private MotorModel motor = new MotorModel(Double.parseDouble(gainField.getText()),
+											  Double.parseDouble(timeField.getText()),
+											  Double.parseDouble(deadField.getText()));
 
-    private PIDController controller = new PIDController(Double.parseDouble(pField.getText()),
-            											 Double.parseDouble(iField.getText()),
-            											 Double.parseDouble(dField.getText()));
+	private PIDController controller = new PIDController(Double.parseDouble(pField.getText()),
+														 Double.parseDouble(iField.getText()),
+														 Double.parseDouble(dField.getText()));
 
-    private XYDataset dataset = createDataset(motor, controller,
-            Double.parseDouble(targetField.getText()));
+	private XYDataset dataset = createDataset(motor, controller,
+			Double.parseDouble(targetField.getText()));
 
 	public PIDResponseChart(String title) {
 		super(title);
@@ -60,7 +60,7 @@ public class PIDResponseChart extends JFrame {
 		JPanel targetPanel = createTargetPanel(chartPanel);
 
 		// Create the main panel containing all of the other panels.
-        JPanel mainPanel = new JPanel();
+		JPanel mainPanel = new JPanel();
 		mainPanel.add(chartPanel);
 		mainPanel.add(motorPanel);
 		mainPanel.add(pidPanel);
@@ -68,44 +68,44 @@ public class PIDResponseChart extends JFrame {
 		setContentPane(mainPanel);
 	}
 
-    private JPanel createMotorPanel() {
-        JPanel panel = new JPanel();
-        Border lineBorder = BorderFactory.createLineBorder(Color.BLACK);
-    	panel.setBorder(BorderFactory.createTitledBorder(lineBorder, "Motor Properties"));
-    
-    	JPanel gainPanel = initTextFieldPanel("Gain", gainField);
-    	JPanel timePanel = initTextFieldPanel("Time Constant", timeField);
-    	JPanel deadPanel = initTextFieldPanel("Dead Time", deadField);
-    
-    	panel.add(gainPanel);
-    	panel.add(timePanel);
-    	panel.add(deadPanel);
-    	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-    	
-    	return panel;
-    }
+	private JPanel createMotorPanel() {
+		JPanel panel = new JPanel();
+		Border lineBorder = BorderFactory.createLineBorder(Color.BLACK);
+		panel.setBorder(BorderFactory.createTitledBorder(lineBorder, "Motor Properties"));
 
-    private JPanel createPidPanel() {
-        JPanel panel = new JPanel();
-        Border lineBorder = BorderFactory.createLineBorder(Color.BLACK);
-        panel.setBorder(BorderFactory.createTitledBorder(lineBorder, "PID Constants"));
-    
-    	JPanel pPanel = initTextFieldPanel("P", pField);
-    	JPanel iPanel = initTextFieldPanel("I", iField);
-    	JPanel dPanel = initTextFieldPanel("D", dField);
-    	
-    	panel.add(pPanel);
-    	panel.add(iPanel);
-    	panel.add(dPanel);
-    	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS)); 
-    
-    	return panel;
-    }
+		JPanel gainPanel = initTextFieldPanel("Gain", gainField);
+		JPanel timePanel = initTextFieldPanel("Time Constant", timeField);
+		JPanel deadPanel = initTextFieldPanel("Dead Time", deadField);
 
-    private JPanel createTargetPanel(ChartPanel chartPanel) {
-        JPanel panel = new JPanel();
-        Border lineBorder = BorderFactory.createLineBorder(Color.BLACK);
-        panel.setBorder(BorderFactory.createTitledBorder(lineBorder, "Target Panel"));
+		panel.add(gainPanel);
+		panel.add(timePanel);
+		panel.add(deadPanel);
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+		return panel;
+	}
+
+	private JPanel createPidPanel() {
+		JPanel panel = new JPanel();
+		Border lineBorder = BorderFactory.createLineBorder(Color.BLACK);
+		panel.setBorder(BorderFactory.createTitledBorder(lineBorder, "PID Constants"));
+
+		JPanel pPanel = initTextFieldPanel("P", pField);
+		JPanel iPanel = initTextFieldPanel("I", iField);
+		JPanel dPanel = initTextFieldPanel("D", dField);
+
+		panel.add(pPanel);
+		panel.add(iPanel);
+		panel.add(dPanel);
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS)); 
+
+		return panel;
+	}
+
+	private JPanel createTargetPanel(ChartPanel chartPanel) {
+		JPanel panel = new JPanel();
+		Border lineBorder = BorderFactory.createLineBorder(Color.BLACK);
+		panel.setBorder(BorderFactory.createTitledBorder(lineBorder, "Target Panel"));
 
 		JButton runButton = new JButton("Run");
 		runButton.addActionListener((ActionEvent e) -> {
@@ -115,11 +115,11 @@ public class PIDResponseChart extends JFrame {
 		panel.add(new JLabel("Target Distance"));
 		panel.add(targetField);
 		panel.add(runButton);
-		
-		return panel;
-    }
 
-    public JFreeChart createPIDChart() {
+		return panel;
+	}
+
+	public JFreeChart createPIDChart() {
 		try {
 			motor = new MotorModel(Double.parseDouble(gainField.getText()),
 								   Double.parseDouble(timeField.getText()),
@@ -143,13 +143,13 @@ public class PIDResponseChart extends JFrame {
 		JFreeChart chart = ChartFactory.createXYLineChart(
 				"PID Response Simulation", "Time (sec)", "", dataset,
 				PlotOrientation.VERTICAL, wantLegend, wantTooltips, wantURLs);
-        chart.getPlot().setBackgroundPaint(Color.WHITE);
-        return chart;
+		chart.getPlot().setBackgroundPaint(Color.WHITE);
+		return chart;
 	}
 
 	private JPanel initTextFieldPanel(String name, JTextField field) {
 		JPanel panel = new JPanel();
-        Border lineBorder = BorderFactory.createLineBorder(Color.BLACK);
+		Border lineBorder = BorderFactory.createLineBorder(Color.BLACK);
 		panel.setBorder(BorderFactory.createTitledBorder(lineBorder));
 		panel.add(new JLabel(name));
 		panel.add(field);
