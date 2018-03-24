@@ -40,11 +40,7 @@ public class ImpulseResponseChart extends JFrame {
 		double plotTimeSecs = 10.0;
 		int numTicks = (int)(plotTimeSecs / Constants.STEP_TIME_SEC);
 
-<<<<<<< HEAD
-		MotorModel model = new MotorModel(1000, 1.0, 1.0);
-=======
         MotorModel model = new MotorModel(1000, 1.0, 0.2);
->>>>>>> master
 
 		XYSeries speedSeries = new XYSeries("Motor speed");
 		XYSeries positionSeries = new XYSeries("Motor position");
