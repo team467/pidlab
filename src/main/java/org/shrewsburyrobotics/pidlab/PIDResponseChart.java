@@ -45,8 +45,7 @@ public class PIDResponseChart extends JFrame {
 														 Double.parseDouble(iField.getText()),
 														 Double.parseDouble(dField.getText()));
 
-	private XYDataset dataset = createDataset(motor, controller,
-			Double.parseDouble(targetField.getText()));
+	private XYDataset dataset = createDataset(motor, controller, Double.parseDouble(targetField.getText()));
 
 	public PIDResponseChart(String title) {
 		super(title);
