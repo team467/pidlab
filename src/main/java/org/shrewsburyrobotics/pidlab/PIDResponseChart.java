@@ -29,6 +29,7 @@ import org.shrewsburyrobotics.pidlab.model.PIDController;
 public class PIDResponseChart extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private JPanel mainPanel;
+	private ChartPanel chartPanel;
 	private JPanel motorPanel;
 	private JPanel pidPanel;
 
@@ -58,9 +59,6 @@ public class PIDResponseChart extends JFrame {
 
 	public PIDResponseChart(String title) {
 		super(title);
-
-		// Create dataset.
-		XYDataset dataset = createDataset();
 
 		lineBorder = BorderFactory.createLineBorder(Color.BLACK);
 		mainPanel = new JPanel();
@@ -108,8 +106,7 @@ public class PIDResponseChart extends JFrame {
 
 		runButton = new JButton("Run");
 		runButton.addActionListener((ActionEvent e) -> {
-			// TODO Run simulation here
-			targetField.setText("Banana");
+			chartPanel.setChart(createPIDChart());
 		});
 
 		targetPanel.add(new JLabel("Target Distance"));
@@ -121,21 +118,43 @@ public class PIDResponseChart extends JFrame {
 		pidPanel.add(dPanel);
 		pidPanel.setLayout(new BoxLayout(pidPanel, BoxLayout.Y_AXIS)); 
 
-		// Create chart.
-		boolean wantLegend = true;
-		boolean wantTooltips = true;
-		boolean wantURLs = false;
-		JFreeChart chart = ChartFactory.createScatterPlot(
-				"Motor Simulation", "Time (sec)", "", dataset,
-				PlotOrientation.VERTICAL, wantLegend, wantTooltips, wantURLs);
-
 		// Create panel in which to display the chart.
-		ChartPanel chartPanel = new ChartPanel(chart);
+		chartPanel = new ChartPanel(createPIDChart());
 		mainPanel.add(chartPanel);
 		mainPanel.add(motorPanel);
 		mainPanel.add(pidPanel);
 		mainPanel.add(targetPanel);
 		setContentPane(mainPanel);
+	}
+
+	public JFreeChart createPIDChart() {
+		// TODO Better initialized defaults?
+		MotorModel motor = new MotorModel(0.0, 0.0, 0.0);
+		PIDController controller = new PIDController(0.0, 0.0, 0.0);
+		XYDataset dataset = createDataset(motor, controller, 0.0);
+
+		try {
+			motor = new MotorModel(Double.parseDouble(gainField.getText()),
+											  Double.parseDouble(timeField.getText()),
+											  Double.parseDouble(deadField.getText()));
+
+			controller = new PIDController(Double.parseDouble(pField.getText()),
+														 Double.parseDouble(iField.getText()),
+														 Double.parseDouble(dField.getText()));
+
+			dataset = createDataset(motor, controller, Double.parseDouble(targetField.getText()));
+
+		} catch (NumberFormatException e) {
+			System.err.println("Text fields are empty");
+		}
+
+		// Create chart.
+		boolean wantLegend = true;
+		boolean wantTooltips = true;
+		boolean wantURLs = false;
+		return ChartFactory.createScatterPlot(
+				"Motor Simulation", "Time (sec)", "", dataset,
+				PlotOrientation.VERTICAL, wantLegend, wantTooltips, wantURLs);
 	}
 
 	private JPanel initTextFieldPanel(String name, JTextField field) {
@@ -146,13 +165,9 @@ public class PIDResponseChart extends JFrame {
 		return panel;
 	}
 
-	private XYDataset createDataset() {
+	private XYDataset createDataset(MotorModel motor, PIDController controller, double targetDistance) {
 		double plotTimeSecs = 12.0;
 		int numTicks = (int)(plotTimeSecs / Constants.STEP_TIME_SEC);
-
-		final double targetDistance = 100.0;
-		MotorModel motor = new MotorModel(1000, 2, 0.0);
-		PIDController controller = new PIDController(0.0060, 0.0, 0.015);
 
 		XYSeries speedSeries = new XYSeries("Motor speed");
 		XYSeries positionSeries = new XYSeries("Motor position");
