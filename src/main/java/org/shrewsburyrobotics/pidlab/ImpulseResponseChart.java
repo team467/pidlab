@@ -3,6 +3,7 @@ package org.shrewsburyrobotics.pidlab;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -25,8 +26,10 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.shrewsburyrobotics.pidlab.model.Constants;
 import org.shrewsburyrobotics.pidlab.model.MotorModel;
 
-public class ImpulseResponseChart extends JFrame {
+public class ImpulseResponseChart extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 1L;
+
+	private ChartPanel chartPanel;
 
     private JTextField gainField = new JTextField("10", 6);
     private JTextField timeField = new JTextField("5", 4);
@@ -43,7 +46,7 @@ public class ImpulseResponseChart extends JFrame {
 		super(title);
 
         // Create viewer panel in which to display the chart.
-        ChartPanel chartPanel = new ChartPanel(createChart());
+        chartPanel = new ChartPanel(createChart());
 
         // Create controller panels where we read input values from.
         JPanel motorPanel = createMotorPanel(chartPanel); 
@@ -66,16 +69,10 @@ public class ImpulseResponseChart extends JFrame {
         JPanel deadPanel = initTextFieldPanel("Dead Time", deadField);
         JPanel plotTimePanel = initTextFieldPanel("Plot Time (secs)", plotTimeField);
 
-        JButton runButton = new JButton("Run");
-        runButton.addActionListener((ActionEvent e) -> {
-            chartPanel.setChart(createChart());
-        });
-
         panel.add(gainPanel);
         panel.add(timePanel);
         panel.add(deadPanel);
         panel.add(plotTimePanel);
-        panel.add(runButton);
 
         return panel;
     }
@@ -130,6 +127,7 @@ public class ImpulseResponseChart extends JFrame {
 	}
 
 	private JPanel initTextFieldPanel(String name, JTextField field) {
+		field.addActionListener(this);
 	    JPanel panel = new JPanel();
 	    Border lineBorder = BorderFactory.createLineBorder(Color.BLACK);
 	    panel.setBorder(BorderFactory.createTitledBorder(lineBorder));
@@ -146,5 +144,10 @@ public class ImpulseResponseChart extends JFrame {
 			example.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 			example.setVisible(true);
 		});
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		chartPanel.setChart(createChart());
 	}
 }
