@@ -9,6 +9,7 @@ public class PIDController {
 	private final double kd;
 	
 	private double error = 0.0;
+	private double accumError = 0.0;
 
 	/**
 	 * Create a new PIDController
@@ -29,14 +30,15 @@ public class PIDController {
 	
 	public void setError(double error) {
 		this.error = error;
+		accumError = error;
 	}
 	
 	public double calculate(double currentPosition, double currentSpeed, double stepTime, double targetPosition) {
 		final double newError = targetPosition - currentPosition;
-		
+		accumError += newError;
 		
 		final double pTerm = kp * error;
-		final double iTerm = ki * 0.0;
+		final double iTerm = ki * accumError;
 		final double dTerm = kd * (newError - error) / stepTime;
 
 		error = newError;

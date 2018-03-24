@@ -152,6 +152,7 @@ public class PIDResponseChart extends JFrame {
 		boolean wantLegend = true;
 		boolean wantTooltips = true;
 		boolean wantURLs = false;
+
 		return ChartFactory.createScatterPlot(
 				"Motor Simulation", "Time (sec)", "", dataset,
 				PlotOrientation.VERTICAL, wantLegend, wantTooltips, wantURLs);
