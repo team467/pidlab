@@ -3,6 +3,7 @@ package org.shrewsburyrobotics.pidlab;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Formatter;
 
 import javax.swing.BorderFactory;
@@ -29,7 +30,7 @@ import org.shrewsburyrobotics.pidlab.model.Constants;
 import org.shrewsburyrobotics.pidlab.model.MotorModel;
 import org.shrewsburyrobotics.pidlab.model.PIDController;
 
-public class PIDResponseChart extends JFrame {
+public class PIDResponseChart extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 1L;
 
 	private JTextField gainField = new JTextField("10", 6);
@@ -46,18 +47,17 @@ public class PIDResponseChart extends JFrame {
 	private JRadioButton dButton = new JRadioButton("D");
 	private ButtonGroup pidSelector = new ButtonGroup();
 
+	private ChartPanel chartPanel = new ChartPanel(createPIDChart());
+
 	private XYDataset dataset = createDataset(query(pField), query(iField), query(dField), query(targetField));
 
 	public PIDResponseChart(String title) {
 		super(title);
 
-		// Create viewer panel in which to display the chart.
-		ChartPanel chartPanel = new ChartPanel(createPIDChart());
-
 		// Create controller panels where we read input values from.
 		JPanel motorPanel = createMotorPanel(); 
 		JPanel pidPanel = createPidPanel();
-		JPanel plotPanel = createPlotPanel(chartPanel);
+		JPanel plotPanel = createPlotPanel();
 
 		// Create the main panel containing all of the other panels.
 		JPanel mainPanel = new JPanel();
@@ -66,7 +66,7 @@ public class PIDResponseChart extends JFrame {
 		mainPanel.add(pidPanel);
 		mainPanel.add(plotPanel);
 		setContentPane(mainPanel);
-	}
+}
 
 	private JPanel createMotorPanel() {
 		JPanel panel = new JPanel();
@@ -76,6 +76,10 @@ public class PIDResponseChart extends JFrame {
 		gainField.setName("Gain");
 		timeField.setName("Time Constant");
 		deadField.setName("Dead Time");
+
+		gainField.addActionListener(this);
+		timeField.addActionListener(this);
+		deadField.addActionListener(this);
 
 		JPanel gainPanel = initTextFieldPanel("Gain", gainField);
 		JPanel timePanel = initTextFieldPanel("Time Constant", timeField);
@@ -98,6 +102,10 @@ public class PIDResponseChart extends JFrame {
 		iField.setName("I");
 		dField.setName("D");
 
+		pField.addActionListener(this);
+		iField.addActionListener(this);
+		dField.addActionListener(this);
+
 		JPanel pPanel = initTextFieldPanel("P", pField);
 		JPanel iPanel = initTextFieldPanel("I", iField);
 		JPanel dPanel = initTextFieldPanel("D", dField);
@@ -111,21 +119,22 @@ public class PIDResponseChart extends JFrame {
 		return panel;
 	}
 
-	private JPanel createPlotPanel(ChartPanel chartPanel) {
+	private JPanel createPlotPanel() {
 		JPanel panel = new JPanel();
 		Border lineBorder = BorderFactory.createLineBorder(Color.BLACK);
 		panel.setBorder(BorderFactory.createTitledBorder(lineBorder, "Plot Settings"));
 
 		targetField.setName("Target Distance");
 
-		JButton runButton = new JButton("Run");
-		runButton.addActionListener((ActionEvent e) -> {
-			chartPanel.setChart(createPIDChart());
-		});
-
 		pidSelector.add(pButton);
 		pidSelector.add(iButton);
 		pidSelector.add(dButton);
+
+		targetField.addActionListener(this);
+		durationField.addActionListener(this);
+		pButton.addActionListener(this);
+		iButton.addActionListener(this);
+		dButton.addActionListener(this);
 
 		JPanel pidSelectorPanel = new JPanel();
 		pidSelectorPanel.add(pButton);
@@ -137,7 +146,6 @@ public class PIDResponseChart extends JFrame {
 		panel.add(targetField);
 		panel.add(new JLabel("Duration:"));
 		panel.add(durationField);
-		panel.add(runButton);
 		panel.add(pidSelectorPanel);
 
 		return panel;
@@ -249,5 +257,10 @@ public class PIDResponseChart extends JFrame {
 			example.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 			example.setVisible(true);
 		});
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		chartPanel.setChart(createPIDChart());
 	}
 }
