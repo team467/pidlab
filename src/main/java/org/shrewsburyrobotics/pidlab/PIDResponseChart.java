@@ -1,5 +1,6 @@
 package org.shrewsburyrobotics.pidlab;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.util.Formatter;
@@ -145,12 +146,12 @@ public class PIDResponseChart extends JFrame {
 				double drive = controller.calculate(motor.getPosition(), motor.getSpeed(),
 						Constants.STEP_TIME_SEC, targetDistance);
 				motor.step(drive);
-	
+
 				final double time = i * Constants.STEP_TIME_SEC;
 				speedSeries.add(time, motor.getSpeed());
 				positionSeries.add(time, motor.getPosition());
 				driveSeries.add(time, drive*100);
-	
+
 				formatter.format("%f,%f,%f,%f\n", time, drive, motor.getSpeed(), motor.getPosition());
 			}
 		}
@@ -159,7 +160,7 @@ public class PIDResponseChart extends JFrame {
 		dataset.addSeries(speedSeries);
 		dataset.addSeries(positionSeries);
 		dataset.addSeries(driveSeries);
-	
+
 		return dataset;
 	}
 
@@ -177,6 +178,7 @@ public class PIDResponseChart extends JFrame {
 				"PID Response Simulation", "Time (sec)", "", dataset,
 				PlotOrientation.VERTICAL, wantLegend, wantTooltips, wantURLs);
 		chart.getPlot().setBackgroundPaint(Color.WHITE);
+		chart.getXYPlot().getRenderer().setSeriesStroke(0, new BasicStroke(3.0F));
 		return chart;
 	}
 
