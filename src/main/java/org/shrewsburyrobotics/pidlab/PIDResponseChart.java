@@ -153,7 +153,7 @@ public class PIDResponseChart extends JFrame {
 		boolean wantTooltips = true;
 		boolean wantURLs = false;
 
-		return ChartFactory.createScatterPlot(
+		return ChartFactory.createXYLineChart(
 				"Motor Simulation", "Time (sec)", "", dataset,
 				PlotOrientation.VERTICAL, wantLegend, wantTooltips, wantURLs);
 	}
