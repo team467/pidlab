@@ -2,12 +2,13 @@ package org.shrewsburyrobotics.pidlab;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Formatter;
 
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -25,19 +26,34 @@ import org.shrewsburyrobotics.pidlab.model.Constants;
 import org.shrewsburyrobotics.pidlab.model.MotorModel;
 import org.shrewsburyrobotics.pidlab.model.PIDController;
 
-public class PIDResponseChart extends JFrame implements ActionListener {
+public class PIDResponseChart extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private JPanel mainPanel;
+	private JPanel motorPanel;
 	private JPanel pidPanel;
+
+	private JPanel gainPanel;
+	private JTextField gainField;
+
+	private JPanel timePanel;
+	private JTextField timeField;
+
+	private JPanel deadPanel;
+	private JTextField deadField;
+
 	private JPanel pPanel;
+	private JTextField pField;
+
 	private JPanel iPanel;
+	private JTextField iField;
+
 	private JPanel dPanel;
+	private JTextField dField;
 
 	private Border lineBorder;
 
-	private JTextField pField;
-	private JTextField iField;
-	private JTextField dField;
+	private JPanel targetPanel;
+	private JTextField targetField;
 	private JButton runButton;
 
 	public PIDResponseChart(String title) {
@@ -48,29 +64,62 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 
 		lineBorder = BorderFactory.createLineBorder(Color.BLACK);
 		mainPanel = new JPanel();
+
+		motorPanel = new JPanel();
+		motorPanel.setBorder(BorderFactory.createTitledBorder(lineBorder, "Motor Properties"));
+
 		pidPanel = new JPanel();
-		pidPanel.setBorder(BorderFactory.createTitledBorder(lineBorder, "PID Controls"));
+		pidPanel.setBorder(BorderFactory.createTitledBorder(lineBorder, "PID Constants"));
+
+		targetPanel = new JPanel();
+		targetPanel.setBorder(BorderFactory.createTitledBorder(lineBorder, "Target Panel"));
+
+		gainField = new JTextField(4);
+		gainField.setName("Gain");
+		gainPanel = initTextFieldPanel("Gain", gainField);
+
+		timeField = new JTextField(4);
+		timeField.setName("Time Constant");
+		timePanel = initTextFieldPanel("Time Constant", timeField);
+
+		deadField = new JTextField(4);
+		deadField.setName("Dead Time");
+		deadPanel = initTextFieldPanel("Dead Time", deadField);
+
+		motorPanel.add(gainPanel);
+		motorPanel.add(timePanel);
+		motorPanel.add(deadPanel);
+		motorPanel.setLayout(new BoxLayout(motorPanel, BoxLayout.Y_AXIS)); 
 
 		pField = new JTextField(4);
 		pField.setName("P");
+		pPanel = initTextFieldPanel("P", pField);
 
 		iField = new JTextField(4);
 		iField.setName("I");
+		iPanel = initTextFieldPanel("I", iField);
 
 		dField = new JTextField(4);
 		dField.setName("D");
+		dPanel = initTextFieldPanel("D", dField);
 
-		pPanel = initPIDPanel("P", pField);
-		iPanel = initPIDPanel("I", iField);
-		dPanel = initPIDPanel("D", dField);
+		targetField = new JTextField(4);
+		targetField.setName("Target Distance");
 
 		runButton = new JButton("Run");
-		runButton.addActionListener(this);
+		runButton.addActionListener((ActionEvent e) -> {
+			// TODO Run simulation here
+			targetField.setText("Banana");
+		});
+
+		targetPanel.add(new JLabel("Target Distance"));
+		targetPanel.add(targetField);
+		targetPanel.add(runButton);
 
 		pidPanel.add(pPanel);
 		pidPanel.add(iPanel);
 		pidPanel.add(dPanel);
-		pidPanel.add(runButton);
+		pidPanel.setLayout(new BoxLayout(pidPanel, BoxLayout.Y_AXIS)); 
 
 		// Create chart.
 		boolean wantLegend = true;
@@ -83,13 +132,16 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 		// Create panel in which to display the chart.
 		ChartPanel chartPanel = new ChartPanel(chart);
 		mainPanel.add(chartPanel);
+		mainPanel.add(motorPanel);
 		mainPanel.add(pidPanel);
+		mainPanel.add(targetPanel);
 		setContentPane(mainPanel);
 	}
 
-	private JPanel initPIDPanel(String name, JTextField field) {
+	private JPanel initTextFieldPanel(String name, JTextField field) {
 		JPanel panel = new JPanel();
-		panel.setBorder(BorderFactory.createTitledBorder(lineBorder, name));
+		panel.setBorder(BorderFactory.createTitledBorder(lineBorder));
+		panel.add(new JLabel(name));
 		panel.add(field);
 		return panel;
 	}
@@ -133,18 +185,10 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
 			PIDResponseChart example = new PIDResponseChart("PID Lab");
-			example.setSize(1200, 800);
+			example.setSize(800, 600);
 			example.setLocationRelativeTo(null);
 			example.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 			example.setVisible(true);
 		});
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() == runButton) {
-			System.out.println("Running Simulation");
-			// TODO Run the simulation here
-		}
 	}
 }
