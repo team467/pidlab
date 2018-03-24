@@ -139,12 +139,12 @@ public class PIDResponseChart extends JFrame {
 	public JFreeChart createPIDChart() {
 		try {
 			motor = new MotorModel(Double.parseDouble(gainField.getText()),
-											  Double.parseDouble(timeField.getText()),
-											  Double.parseDouble(deadField.getText()));
+								   Double.parseDouble(timeField.getText()),
+								   Double.parseDouble(deadField.getText()));
 
 			controller = new PIDController(Double.parseDouble(pField.getText()),
-														 Double.parseDouble(iField.getText()),
-														 Double.parseDouble(dField.getText()));
+										   Double.parseDouble(iField.getText()),
+										   Double.parseDouble(dField.getText()));
 
 			dataset = createDataset(motor, controller, Double.parseDouble(targetField.getText()));
 
