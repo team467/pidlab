@@ -125,7 +125,7 @@ public class PIDResponseChart extends JFrame {
 		XYSeries speedSeries = new XYSeries("Motor speed");
 		XYSeries positionSeries = new XYSeries("Motor position");
 		XYSeries driveSeries = new XYSeries("Drive");
-	
+
 		controller.setError(targetDistance);
 		try (Formatter formatter = new Formatter(System.out)) {
 			for (int i = 0; i < numTicks; i++) {
@@ -141,7 +141,7 @@ public class PIDResponseChart extends JFrame {
 				formatter.format("%f,%f,%f,%f\n", time, drive, motor.getSpeed(), motor.getPosition());
 			}
 		}
-	
+
 		XYSeriesCollection dataset = new XYSeriesCollection();
 		dataset.addSeries(speedSeries);
 		dataset.addSeries(positionSeries);
