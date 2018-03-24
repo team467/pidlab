@@ -136,21 +136,21 @@ public class PIDResponseChart extends JFrame {
 		setContentPane(mainPanel);
 	}
 
-	public JFreeChart createPIDChart() {
+	public double query(JTextField field) {
+		double result = 0.0;
 		try {
-			motor = new MotorModel(Double.parseDouble(gainField.getText()),
-								   Double.parseDouble(timeField.getText()),
-								   Double.parseDouble(deadField.getText()));
-
-			controller = new PIDController(Double.parseDouble(pField.getText()),
-										   Double.parseDouble(iField.getText()),
-										   Double.parseDouble(dField.getText()));
-
-			dataset = createDataset(motor, controller, Double.parseDouble(targetField.getText()));
-
+			result =  Double.parseDouble(field.getText());
 		} catch (NumberFormatException e) {
-			System.err.println("Invalid data in text fields");
+			field.setText("0.0");
+			System.err.println(field.getName() + " is empty, defaulting to zero.");
 		}
+		return result;
+	}
+
+	public JFreeChart createPIDChart() {
+		motor = new MotorModel(query(gainField), query(timeField), query(deadField));
+		controller = new PIDController(query(pField), query(iField), query(dField));
+		dataset = createDataset(motor, controller, query(targetField));
 
 		// Create chart.
 		boolean wantLegend = true;
