@@ -9,7 +9,6 @@ import java.util.Formatter;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -55,16 +54,16 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 		super(title);
 
 		// Create controller panels where we read input values from.
-		JPanel motorPanel = createMotorPanel(); 
-		JPanel pidPanel = createPidPanel();
-		JPanel plotPanel = createPlotPanel();
+		JPanel UIPanel = new JPanel();
+		UIPanel.add(createMotorPanel()); 
+		UIPanel.add(createPidPanel());
+		UIPanel.add(createPlotPanel());
 
 		// Create the main panel containing all of the other panels.
 		JPanel mainPanel = new JPanel();
 		mainPanel.add(chartPanel);
-		mainPanel.add(motorPanel);
-		mainPanel.add(pidPanel);
-		mainPanel.add(plotPanel);
+		mainPanel.add(UIPanel);
+		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS)); 
 		setContentPane(mainPanel);
 }
 
