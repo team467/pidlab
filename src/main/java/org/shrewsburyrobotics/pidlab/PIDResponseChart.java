@@ -57,8 +57,17 @@ public class PIDResponseChart extends JFrame {
 	private JTextField targetField;
 	private JButton runButton;
 
+	private MotorModel motor;
+	private PIDController controller;
+	private XYDataset dataset;
+
 	public PIDResponseChart(String title) {
 		super(title);
+
+		// TODO Better initialized defaults?
+		motor = new MotorModel(0.0, 0.0, 0.0);
+		controller = new PIDController(0.0, 0.0, 0.0);
+		dataset = createDataset(motor, controller, 0.0);
 
 		lineBorder = BorderFactory.createLineBorder(Color.BLACK);
 		mainPanel = new JPanel();
@@ -128,24 +137,19 @@ public class PIDResponseChart extends JFrame {
 	}
 
 	public JFreeChart createPIDChart() {
-		// TODO Better initialized defaults?
-		MotorModel motor = new MotorModel(0.0, 0.0, 0.0);
-		PIDController controller = new PIDController(0.0, 0.0, 0.0);
-		XYDataset dataset = createDataset(motor, controller, 0.0);
-
 		try {
 			motor = new MotorModel(Double.parseDouble(gainField.getText()),
-											  Double.parseDouble(timeField.getText()),
-											  Double.parseDouble(deadField.getText()));
+								   Double.parseDouble(timeField.getText()),
+								   Double.parseDouble(deadField.getText()));
 
 			controller = new PIDController(Double.parseDouble(pField.getText()),
-														 Double.parseDouble(iField.getText()),
-														 Double.parseDouble(dField.getText()));
+										   Double.parseDouble(iField.getText()),
+										   Double.parseDouble(dField.getText()));
 
 			dataset = createDataset(motor, controller, Double.parseDouble(targetField.getText()));
 
 		} catch (NumberFormatException e) {
-			System.err.println("Text fields are empty");
+			System.err.println("Invalid data in text fields");
 		}
 
 		// Create chart.
