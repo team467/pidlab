@@ -37,27 +37,30 @@ public class PIDResponseChart extends JFrame {
 	private JTextField dField = new JTextField("0.015", 6);
     private JTextField targetField = new JTextField("100", 4);
 
-	private MotorModel motor;
-	private PIDController controller;
-	private XYDataset dataset;
+    private MotorModel motor = new MotorModel(Double.parseDouble(gainField.getText()),
+            Double.parseDouble(timeField.getText()),
+            Double.parseDouble(deadField.getText()));
+
+    private PIDController controller = new PIDController(Double.parseDouble(pField.getText()),
+            Double.parseDouble(iField.getText()),
+            Double.parseDouble(dField.getText()));
+
+    private XYDataset dataset = createDataset(motor, controller,
+            Double.parseDouble(targetField.getText()));
 
 	public PIDResponseChart(String title) {
 		super(title);
 
-		// TODO Better initialized defaults?
-		motor = new MotorModel(0.0, 0.0, 0.0);
-		controller = new PIDController(0.0, 0.0, 0.0);
-		dataset = createDataset(motor, controller, 0.0);
-
-		JPanel mainPanel = new JPanel();
-
-		// Create panel in which to display the chart.
+		// Create viewer panel in which to display the chart.
 		ChartPanel chartPanel = new ChartPanel(createPIDChart());
 
+		// Create controller panels where we read input values from.
 		JPanel motorPanel = createMotorPanel(); 
 		JPanel pidPanel = createPidPanel();
 		JPanel targetPanel = createTargetPanel(chartPanel);
 
+		// Create the main panel containing all of the other panels.
+        JPanel mainPanel = new JPanel();
 		mainPanel.add(chartPanel);
 		mainPanel.add(motorPanel);
 		mainPanel.add(pidPanel);
