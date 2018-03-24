@@ -72,6 +72,10 @@ public class PIDResponseChart extends JFrame {
 		Border lineBorder = BorderFactory.createLineBorder(Color.BLACK);
 		panel.setBorder(BorderFactory.createTitledBorder(lineBorder, "Motor Properties"));
 
+		gainField.setName("Gain");
+		timeField.setName("Time Constant");
+		deadField.setName("Dead Time");
+
 		JPanel gainPanel = initTextFieldPanel("Gain", gainField);
 		JPanel timePanel = initTextFieldPanel("Time Constant", timeField);
 		JPanel deadPanel = initTextFieldPanel("Dead Time", deadField);
@@ -88,6 +92,10 @@ public class PIDResponseChart extends JFrame {
 		JPanel panel = new JPanel();
 		Border lineBorder = BorderFactory.createLineBorder(Color.BLACK);
 		panel.setBorder(BorderFactory.createTitledBorder(lineBorder, "PID Constants"));
+
+		pField.setName("P");
+		iField.setName("I");
+		dField.setName("D");
 
 		JPanel pPanel = initTextFieldPanel("P", pField);
 		JPanel iPanel = initTextFieldPanel("I", iField);
@@ -106,12 +114,14 @@ public class PIDResponseChart extends JFrame {
 		Border lineBorder = BorderFactory.createLineBorder(Color.BLACK);
 		panel.setBorder(BorderFactory.createTitledBorder(lineBorder, "Target Panel"));
 
+		targetField.setName("Target Distance");
+
 		JButton runButton = new JButton("Run");
 		runButton.addActionListener((ActionEvent e) -> {
 			chartPanel.setChart(createPIDChart());
 		});
 
-		panel.add(new JLabel("Target Distance"));
+		panel.add(new JLabel("Target Distance:"));
 		panel.add(targetField);
 		panel.add(runButton);
 
@@ -121,7 +131,7 @@ public class PIDResponseChart extends JFrame {
 	private XYDataset createDataset(MotorModel motor, PIDController controller, double targetDistance) {
 		double plotTimeSecs = 12.0;
 		int numTicks = (int)(plotTimeSecs / Constants.STEP_TIME_SEC);
-	
+
 		XYSeries speedSeries = new XYSeries("Motor speed");
 		XYSeries positionSeries = new XYSeries("Motor position");
 		XYSeries driveSeries = new XYSeries("Drive");
@@ -169,9 +179,7 @@ public class PIDResponseChart extends JFrame {
 
 	private JPanel initTextFieldPanel(String name, JTextField field) {
 		JPanel panel = new JPanel();
-		Border lineBorder = BorderFactory.createLineBorder(Color.BLACK);
-		panel.setBorder(BorderFactory.createTitledBorder(lineBorder));
-		panel.add(new JLabel(name));
+		panel.add(new JLabel(name + ":"));
 		panel.add(field);
 		return panel;
 	}
