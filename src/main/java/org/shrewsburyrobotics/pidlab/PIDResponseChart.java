@@ -38,12 +38,12 @@ public class PIDResponseChart extends JFrame {
     private JTextField targetField = new JTextField("100", 4);
 
     private MotorModel motor = new MotorModel(Double.parseDouble(gainField.getText()),
-            Double.parseDouble(timeField.getText()),
-            Double.parseDouble(deadField.getText()));
+            								  Double.parseDouble(timeField.getText()),
+            								  Double.parseDouble(deadField.getText()));
 
     private PIDController controller = new PIDController(Double.parseDouble(pField.getText()),
-            Double.parseDouble(iField.getText()),
-            Double.parseDouble(dField.getText()));
+            											 Double.parseDouble(iField.getText()),
+            											 Double.parseDouble(dField.getText()));
 
     private XYDataset dataset = createDataset(motor, controller,
             Double.parseDouble(targetField.getText()));
