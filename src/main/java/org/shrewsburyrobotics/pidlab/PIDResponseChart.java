@@ -36,6 +36,7 @@ public class PIDResponseChart extends JFrame {
 	private JTextField iField = new JTextField("0.0", 6);
 	private JTextField dField = new JTextField("0.015", 6);
 	private JTextField targetField = new JTextField("100", 4);
+	private JTextField durationField = new JTextField("10", 4);
 
 	private MotorModel motor = new MotorModel(Double.parseDouble(gainField.getText()),
 											  Double.parseDouble(timeField.getText()),
@@ -56,14 +57,14 @@ public class PIDResponseChart extends JFrame {
 		// Create controller panels where we read input values from.
 		JPanel motorPanel = createMotorPanel(); 
 		JPanel pidPanel = createPidPanel();
-		JPanel targetPanel = createTargetPanel(chartPanel);
+		JPanel plotPanel = createPlotPanel(chartPanel);
 
 		// Create the main panel containing all of the other panels.
 		JPanel mainPanel = new JPanel();
 		mainPanel.add(chartPanel);
 		mainPanel.add(motorPanel);
 		mainPanel.add(pidPanel);
-		mainPanel.add(targetPanel);
+		mainPanel.add(plotPanel);
 		setContentPane(mainPanel);
 	}
 
@@ -109,10 +110,10 @@ public class PIDResponseChart extends JFrame {
 		return panel;
 	}
 
-	private JPanel createTargetPanel(ChartPanel chartPanel) {
+	private JPanel createPlotPanel(ChartPanel chartPanel) {
 		JPanel panel = new JPanel();
 		Border lineBorder = BorderFactory.createLineBorder(Color.BLACK);
-		panel.setBorder(BorderFactory.createTitledBorder(lineBorder, "Target Panel"));
+		panel.setBorder(BorderFactory.createTitledBorder(lineBorder, "Plot Settings"));
 
 		targetField.setName("Target Distance");
 
@@ -123,13 +124,15 @@ public class PIDResponseChart extends JFrame {
 
 		panel.add(new JLabel("Target Distance:"));
 		panel.add(targetField);
+		panel.add(new JLabel("Duration:"));
+		panel.add(durationField);
 		panel.add(runButton);
 
 		return panel;
 	}
 
 	private XYDataset createDataset(MotorModel motor, PIDController controller, double targetDistance) {
-		double plotTimeSecs = 12.0;
+		double plotTimeSecs = query(durationField);
 		int numTicks = (int)(plotTimeSecs / Constants.STEP_TIME_SEC);
 
 		XYSeries speedSeries = new XYSeries("Motor speed");
