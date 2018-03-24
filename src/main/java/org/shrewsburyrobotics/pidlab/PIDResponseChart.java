@@ -157,13 +157,24 @@ public class PIDResponseChart extends JFrame {
 		MotorModel mainMotor = makeMotor();
 		XYSeries mainSeries = new XYSeries("Set");
 
-		PIDController plusController = new PIDController(1.5*kP, kI, kD);
+		PIDController plusController;
 		MotorModel plusMotor = makeMotor();
 		XYSeries plusSeries = new XYSeries("Plus 50%");
 
-		PIDController minusController = new PIDController(0.5*kP, kI, kD);
+		PIDController minusController;
 		MotorModel minusMotor = makeMotor();
 		XYSeries minusSeries = new XYSeries("Minus 50%");
+
+		if (dButton.isSelected()) {
+			plusController = new PIDController(kP, kI, 1.5*kD);
+			minusController = new PIDController(kP, kI, 0.5*kD);
+		} else if (iButton.isSelected()) {
+			plusController = new PIDController(kP, 1.5*kI, kD);
+			minusController = new PIDController(kP, 0.5*kI, kD);
+		} else { // Default p
+			plusController = new PIDController(1.5*kP, kI, kD);
+			minusController = new PIDController(0.5*kP, kI, kD);
+		}
 
 		mainController.setError(targetDistance);
 		plusController.setError(targetDistance);
