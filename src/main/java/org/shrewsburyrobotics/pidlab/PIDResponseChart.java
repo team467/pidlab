@@ -261,6 +261,7 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		// Update chart when anything changes
 		chartPanel.setChart(createPIDChart());
 	}
 }
