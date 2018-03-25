@@ -174,6 +174,8 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 		MotorModel minusMotor = makeMotor();
 		XYSeries minusSeries = new XYSeries("Minus 50%");
 
+		XYSeries targetSeries = new XYSeries("Target");
+
 		if (dButton.isSelected()) {
 			plusController = new PIDController(kP, kI, 1.5*kD);
 			minusController = new PIDController(kP, kI, 0.5*kD);
@@ -196,6 +198,7 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 				iterate(mainMotor, mainController, mainSeries, targetDistance, time);
 				iterate(plusMotor, plusController, plusSeries, targetDistance, time);
 				iterate(minusMotor, minusController, minusSeries, targetDistance, time);
+				targetSeries.add(time, targetDistance);
 
 				formatter.format("%f,%f\n", time, mainMotor.getPosition());
 			}
@@ -205,6 +208,7 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 		dataset.addSeries(mainSeries);
 		dataset.addSeries(plusSeries);
 		dataset.addSeries(minusSeries);
+		dataset.addSeries(targetSeries);
 
 		return dataset;
 	}
@@ -229,6 +233,7 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 				PlotOrientation.VERTICAL, wantLegend, wantTooltips, wantURLs);
 		chart.getPlot().setBackgroundPaint(Color.WHITE);
 		chart.getXYPlot().getRenderer().setSeriesStroke(0, new BasicStroke(3.0F));
+		chart.getXYPlot().getRenderer().setSeriesStroke(3, new BasicStroke(3.0F));
 		return chart;
 	}
 
