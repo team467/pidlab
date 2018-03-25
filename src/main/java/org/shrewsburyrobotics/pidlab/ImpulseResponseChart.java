@@ -196,7 +196,12 @@ class ImpulseResponseChart extends JFrame implements ActionListener {
         return dataset;
     }
 
-    public static void main(String[] args) {
+    @Override
+	public void actionPerformed(ActionEvent e) {
+		chartPanel.setChart(createChart());
+	}
+
+	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
 			ImpulseResponseChart example = new ImpulseResponseChart("PID Lab");
 			example.setSize(1200, 800);
@@ -204,10 +209,5 @@ class ImpulseResponseChart extends JFrame implements ActionListener {
 			example.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 			example.setVisible(true);
 		});
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		chartPanel.setChart(createChart());
 	}
 }
