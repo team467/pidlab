@@ -1,15 +1,19 @@
 package org.shrewsburyrobotics.pidlab;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Formatter;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
+import javax.swing.ButtonGroup;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
@@ -26,7 +30,7 @@ import org.shrewsburyrobotics.pidlab.model.Constants;
 import org.shrewsburyrobotics.pidlab.model.MotorModel;
 import org.shrewsburyrobotics.pidlab.model.PIDController;
 
-public class PIDResponseChart extends JFrame {
+public class PIDResponseChart extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 1L;
 
 	private JTextField gainField = new JTextField("10", 6);
@@ -36,41 +40,47 @@ public class PIDResponseChart extends JFrame {
 	private JTextField iField = new JTextField("0.0", 6);
 	private JTextField dField = new JTextField("0.015", 6);
 	private JTextField targetField = new JTextField("100", 4);
+	private JTextField durationField = new JTextField("10", 4);
 
-	private MotorModel motor = new MotorModel(Double.parseDouble(gainField.getText()),
-											  Double.parseDouble(timeField.getText()),
-											  Double.parseDouble(deadField.getText()));
+	private JRadioButton pButton = new JRadioButton("P");
+	private JRadioButton iButton = new JRadioButton("I");
+	private JRadioButton dButton = new JRadioButton("D");
+	private ButtonGroup pidSelector = new ButtonGroup();
 
-	private PIDController controller = new PIDController(Double.parseDouble(pField.getText()),
-														 Double.parseDouble(iField.getText()),
-														 Double.parseDouble(dField.getText()));
+	private ChartPanel chartPanel = new ChartPanel(createPIDChart());
 
-	private XYDataset dataset = createDataset(motor, controller, Double.parseDouble(targetField.getText()));
+	private XYDataset dataset = createDataset(query(pField), query(iField), query(dField), query(targetField));
 
 	public PIDResponseChart(String title) {
 		super(title);
 
-		// Create viewer panel in which to display the chart.
-		ChartPanel chartPanel = new ChartPanel(createPIDChart());
-
 		// Create controller panels where we read input values from.
-		JPanel motorPanel = createMotorPanel(); 
-		JPanel pidPanel = createPidPanel();
-		JPanel targetPanel = createTargetPanel(chartPanel);
+		JPanel UIPanel = new JPanel();
+		UIPanel.add(createMotorPanel()); 
+		UIPanel.add(createPidPanel());
+		UIPanel.add(createPlotPanel());
+		UIPanel.setMaximumSize(new Dimension(800, 100));
 
 		// Create the main panel containing all of the other panels.
 		JPanel mainPanel = new JPanel();
 		mainPanel.add(chartPanel);
-		mainPanel.add(motorPanel);
-		mainPanel.add(pidPanel);
-		mainPanel.add(targetPanel);
+		mainPanel.add(UIPanel);
+		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS)); 
 		setContentPane(mainPanel);
-	}
+}
 
 	private JPanel createMotorPanel() {
 		JPanel panel = new JPanel();
 		Border lineBorder = BorderFactory.createLineBorder(Color.BLACK);
 		panel.setBorder(BorderFactory.createTitledBorder(lineBorder, "Motor Properties"));
+
+		gainField.setName("Gain");
+		timeField.setName("Time Constant");
+		deadField.setName("Dead Time");
+
+		gainField.addActionListener(this);
+		timeField.addActionListener(this);
+		deadField.addActionListener(this);
 
 		JPanel gainPanel = initTextFieldPanel("Gain", gainField);
 		JPanel timePanel = initTextFieldPanel("Time Constant", timeField);
@@ -89,6 +99,14 @@ public class PIDResponseChart extends JFrame {
 		Border lineBorder = BorderFactory.createLineBorder(Color.BLACK);
 		panel.setBorder(BorderFactory.createTitledBorder(lineBorder, "PID Constants"));
 
+		pField.setName("P");
+		iField.setName("I");
+		dField.setName("D");
+
+		pField.addActionListener(this);
+		iField.addActionListener(this);
+		dField.addActionListener(this);
+
 		JPanel pPanel = initTextFieldPanel("P", pField);
 		JPanel iPanel = initTextFieldPanel("I", iField);
 		JPanel dPanel = initTextFieldPanel("D", dField);
@@ -96,43 +114,114 @@ public class PIDResponseChart extends JFrame {
 		panel.add(pPanel);
 		panel.add(iPanel);
 		panel.add(dPanel);
+
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS)); 
 
 		return panel;
 	}
 
-	private JPanel createTargetPanel(ChartPanel chartPanel) {
+	private JPanel createPlotPanel() {
 		JPanel panel = new JPanel();
 		Border lineBorder = BorderFactory.createLineBorder(Color.BLACK);
-		panel.setBorder(BorderFactory.createTitledBorder(lineBorder, "Target Panel"));
+		panel.setBorder(BorderFactory.createTitledBorder(lineBorder, "Plot Settings"));
 
-		JButton runButton = new JButton("Run");
-		runButton.addActionListener((ActionEvent e) -> {
-			chartPanel.setChart(createPIDChart());
-		});
+		targetField.setName("Target Distance");
 
-		panel.add(new JLabel("Target Distance"));
+		pidSelector.add(pButton);
+		pidSelector.add(iButton);
+		pidSelector.add(dButton);
+
+		targetField.addActionListener(this);
+		durationField.addActionListener(this);
+		pButton.addActionListener(this);
+		iButton.addActionListener(this);
+		dButton.addActionListener(this);
+
+		JPanel pidSelectorPanel = new JPanel();
+		pidSelectorPanel.add(pButton);
+		pidSelectorPanel.add(iButton);
+		pidSelectorPanel.add(dButton);
+		pidSelectorPanel.setBorder(BorderFactory.createTitledBorder(lineBorder, "Tune Parameter"));
+
+		panel.add(new JLabel("Target Distance:"));
 		panel.add(targetField);
-		panel.add(runButton);
+		panel.add(new JLabel("Duration:"));
+		panel.add(durationField);
+		panel.add(pidSelectorPanel);
 
 		return panel;
 	}
 
-	public JFreeChart createPIDChart() {
-		try {
-			motor = new MotorModel(Double.parseDouble(gainField.getText()),
-								   Double.parseDouble(timeField.getText()),
-								   Double.parseDouble(deadField.getText()));
+	private MotorModel makeMotor() {
+		return new MotorModel(Double.parseDouble(gainField.getText()),
+			  Double.parseDouble(timeField.getText()),
+			  Double.parseDouble(deadField.getText()));
+	}
 
-			controller = new PIDController(Double.parseDouble(pField.getText()),
-										   Double.parseDouble(iField.getText()),
-										   Double.parseDouble(dField.getText()));
+	private XYDataset createDataset(double kP, double kI, double kD, double targetDistance) {
+		double plotTimeSecs = query(durationField);
+		int numTicks = (int)(plotTimeSecs / Constants.STEP_TIME_SEC);
 
-			dataset = createDataset(motor, controller, Double.parseDouble(targetField.getText()));
+		PIDController mainController = new PIDController(kP, kI, kD);
+		MotorModel mainMotor = makeMotor();
+		XYSeries mainSeries = new XYSeries("Set");
 
-		} catch (NumberFormatException e) {
-			System.err.println("Invalid data in text fields");
+		PIDController plusController;
+		MotorModel plusMotor = makeMotor();
+		XYSeries plusSeries = new XYSeries("Plus 50%");
+
+		PIDController minusController;
+		MotorModel minusMotor = makeMotor();
+		XYSeries minusSeries = new XYSeries("Minus 50%");
+
+		XYSeries targetSeries = new XYSeries("Target");
+
+		if (dButton.isSelected()) {
+			plusController = new PIDController(kP, kI, 1.5*kD);
+			minusController = new PIDController(kP, kI, 0.5*kD);
+		} else if (iButton.isSelected()) {
+			plusController = new PIDController(kP, 1.5*kI, kD);
+			minusController = new PIDController(kP, 0.5*kI, kD);
+		} else { // Default p
+			plusController = new PIDController(1.5*kP, kI, kD);
+			minusController = new PIDController(0.5*kP, kI, kD);
 		}
+
+		mainController.setError(targetDistance);
+		plusController.setError(targetDistance);
+		minusController.setError(targetDistance);
+
+		try (Formatter formatter = new Formatter(System.out)) {
+			for (int i = 0; i < numTicks; i++) {
+				final double time = i * Constants.STEP_TIME_SEC;
+
+				iterate(mainMotor, mainController, mainSeries, targetDistance, time);
+				iterate(plusMotor, plusController, plusSeries, targetDistance, time);
+				iterate(minusMotor, minusController, minusSeries, targetDistance, time);
+				targetSeries.add(time, targetDistance);
+
+				formatter.format("%f,%f\n", time, mainMotor.getPosition());
+			}
+		}
+
+		XYSeriesCollection dataset = new XYSeriesCollection();
+		dataset.addSeries(mainSeries);
+		dataset.addSeries(plusSeries);
+		dataset.addSeries(minusSeries);
+		dataset.addSeries(targetSeries);
+
+		return dataset;
+	}
+
+	private void iterate(MotorModel motor, PIDController controller, XYSeries series, double targetDistance, double time) {
+		double drive = controller.calculate(motor.getPosition(), motor.getSpeed(),
+				Constants.STEP_TIME_SEC, targetDistance);
+		motor.step(drive);
+		series.add(time, motor.getPosition());
+	}
+
+	public JFreeChart createPIDChart() {
+		dataset = createDataset(query(pField), query(iField), query(dField), query(targetField));
 
 		// Create chart.
 		boolean wantLegend = true;
@@ -143,57 +232,42 @@ public class PIDResponseChart extends JFrame {
 				"PID Response Simulation", "Time (sec)", "", dataset,
 				PlotOrientation.VERTICAL, wantLegend, wantTooltips, wantURLs);
 		chart.getPlot().setBackgroundPaint(Color.WHITE);
+		chart.getXYPlot().getRenderer().setSeriesStroke(0, new BasicStroke(3.0F));
+		chart.getXYPlot().getRenderer().setSeriesStroke(3, new BasicStroke(3.0F));
 		return chart;
 	}
 
 	private JPanel initTextFieldPanel(String name, JTextField field) {
 		JPanel panel = new JPanel();
-		Border lineBorder = BorderFactory.createLineBorder(Color.BLACK);
-		panel.setBorder(BorderFactory.createTitledBorder(lineBorder));
-		panel.add(new JLabel(name));
+		panel.add(new JLabel(name + ":"));
 		panel.add(field);
 		return panel;
 	}
 
-	private XYDataset createDataset(MotorModel motor, PIDController controller, double targetDistance) {
-		double plotTimeSecs = 12.0;
-		int numTicks = (int)(plotTimeSecs / Constants.STEP_TIME_SEC);
-
-		XYSeries speedSeries = new XYSeries("Motor speed");
-		XYSeries positionSeries = new XYSeries("Motor position");
-		XYSeries driveSeries = new XYSeries("Drive");
-
-		controller.setError(targetDistance);
-		try (Formatter formatter = new Formatter(System.out)) {
-			for (int i = 0; i < numTicks; i++) {
-				double drive = controller.calculate(motor.getPosition(), motor.getSpeed(),
-						Constants.STEP_TIME_SEC, targetDistance);
-				motor.step(drive);
-
-				final double time = i * Constants.STEP_TIME_SEC;
-				speedSeries.add(time, motor.getSpeed());
-				positionSeries.add(time, motor.getPosition());
-				driveSeries.add(time, drive*100);
-
-				formatter.format("%f,%f,%f,%f\n", time, drive, motor.getSpeed(), motor.getPosition());
-			}
+	public double query(JTextField field) {
+		double result = 0.0;
+		try {
+			result =  Double.parseDouble(field.getText());
+		} catch (NumberFormatException e) {
+			field.setText("0.0");
+			System.err.println(field.getName() + " is empty, defaulting to zero.");
 		}
-
-		XYSeriesCollection dataset = new XYSeriesCollection();
-		dataset.addSeries(speedSeries);
-		dataset.addSeries(positionSeries);
-		dataset.addSeries(driveSeries);
-
-		return dataset;
+		return result;
 	}
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
 			PIDResponseChart example = new PIDResponseChart("PID Lab");
-			example.setSize(800, 600);
+			example.setSize(800, 680);
 			example.setLocationRelativeTo(null);
 			example.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 			example.setVisible(true);
 		});
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// Update chart when anything changes
+		chartPanel.setChart(createPIDChart());
 	}
 }

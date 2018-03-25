@@ -81,7 +81,16 @@ public class MotorModel {
 	public double getPosition() {
 		return currentPosition;
 	}
-	
+
+	/**
+	 * Reset the motor back to idle state
+	 */
+	public void reset() {
+		currentPosition = 0;
+		currentSpeed = 0;
+		driveMemory.clear();
+	}
+
 	@Override
 	public String toString() {
 	    return "MotorModel[Kp=" + gain + ", Tp=" + timeConstant + ", Op=" + deadTime + "]";
