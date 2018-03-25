@@ -3,6 +3,10 @@ package org.shrewsburyrobotics.pidlab;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -15,29 +19,24 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.border.Border;
 
-import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.data.xy.XYDataset;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.shrewsburyrobotics.pidlab.model.Constants;
 import org.shrewsburyrobotics.pidlab.model.MotorModel;
 
-public class ImpulseResponseChart extends JFrame {
+class ImpulseResponseChart extends JFrame {
 	private static final long serialVersionUID = 1L;
 
     private JTextField gainField = new JTextField("10", 6);
     private JTextField timeField = new JTextField("5", 4);
     private JTextField deadField = new JTextField("0.2", 4);
     private JTextField plotTimeField = new JTextField("10", 4);
-
-    private MotorModel motor = new MotorModel(Double.parseDouble(gainField.getText()),
-            Double.parseDouble(timeField.getText()),
-            Double.parseDouble(deadField.getText()));
-
-    private XYDataset dataset = createDataset(motor);
 
     public ImpulseResponseChart(String title) {
 		super(title);
@@ -55,6 +54,15 @@ public class ImpulseResponseChart extends JFrame {
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         setContentPane(mainPanel);
 	}
+
+    private JPanel initTextFieldPanel(String name, JTextField field) {
+        JPanel panel = new JPanel();
+        Border lineBorder = BorderFactory.createLineBorder(Color.BLACK);
+        panel.setBorder(BorderFactory.createTitledBorder(lineBorder));
+        panel.add(new JLabel(name));
+        panel.add(field);
+        return panel;
+    }
 
     private JPanel createMotorPanel(ChartPanel chartPanel) {
         JPanel panel = new JPanel();
@@ -80,48 +88,65 @@ public class ImpulseResponseChart extends JFrame {
         return panel;
     }
 
-    public JFreeChart createChart() {
-        try {
-            motor = new MotorModel(Double.parseDouble(gainField.getText()),
-                                   Double.parseDouble(timeField.getText()),
-                                   Double.parseDouble(deadField.getText()));
+    private JFreeChart createChart() {
+        // Get the data.
+        XYSeriesCollection simulationData = createSimulationData();
+        XYSeriesCollection recordedData = readRecordedData("test.data");
 
-            dataset = createDataset(motor);
-        } catch (NumberFormatException e) {
-            System.err.println("Invalid data in text fields");
-        }
+        // Create the renderers.
+        StandardXYItemRenderer simulationDataRenderer = new StandardXYItemRenderer();
+        XYLineAndShapeRenderer recordedDataRenderer = new XYLineAndShapeRenderer(false, true);   // Shapes only
+        
+        // Create the plot and axes.
+        XYPlot plot = new XYPlot();
+        plot.setDomainAxis(new NumberAxis("Time"));
+        plot.setRangeAxis(new NumberAxis("Value"));
 
-        // Create chart.
-        boolean wantLegend = true;
-        boolean wantTooltips = true;
-        boolean wantURLs = false;
+        // Add the simulated data to the plot.
+        plot.setDataset(0, simulationData);
+        plot.setRenderer(0, simulationDataRenderer);
+        simulationDataRenderer.setSeriesStroke(0, new BasicStroke(2.0f));
+        simulationDataRenderer.setSeriesStroke(1, new BasicStroke(2.0f));
 
-        JFreeChart chart = ChartFactory.createXYLineChart(
-                "PID Response Simulation", "Time (sec)", "", dataset,
-                PlotOrientation.VERTICAL, wantLegend, wantTooltips, wantURLs);
-        chart.getPlot().setBackgroundPaint(Color.WHITE);
-        chart.getXYPlot().getRenderer().setSeriesStroke(0, new BasicStroke(2.0f));
-        chart.getXYPlot().getRenderer().setSeriesStroke(1, new BasicStroke(2.0f));
+        // Add the recorded data to the plot.
+        plot.setDataset(1, recordedData);
+        plot.setRenderer(1, recordedDataRenderer);
+
+        // Return a complete chart created from the plot.
+        JFreeChart chart = new JFreeChart("Impulse Response Simulation", plot);
         return chart;
     }
 
-    private XYDataset createDataset(MotorModel model) {
+    private XYSeriesCollection createSimulationData() {
 		double plotTimeSecs = Double.parseDouble(plotTimeField.getText());
 		int numTicks = (int)(plotTimeSecs / Constants.STEP_TIME_SEC);
 
+		// Create a motor model based on the current settings from the UI.
+        MotorModel model = new MotorModel(Double.parseDouble(gainField.getText()),
+                Double.parseDouble(timeField.getText()),
+                Double.parseDouble(deadField.getText()));
+
+        // Create the data series in which to store the data.
 		XYSeries speedSeries = new XYSeries("Motor speed");
 		XYSeries positionSeries = new XYSeries("Motor position");
+
+		// Run the simulation.
 		for (int i = 0; i < numTicks/2; i++) {
 			model.step(1.0);
 			speedSeries.add(i * Constants.STEP_TIME_SEC, model.getSpeed());
 			positionSeries.add(i * Constants.STEP_TIME_SEC, model.getPosition());
+			System.out.println(i * Constants.STEP_TIME_SEC + ",1.0," + model.getSpeed()
+			        + "," + model.getPosition());
 		}
 		for (int i = numTicks/2; i < numTicks; i++) {
 			model.step(0.0);
 			speedSeries.add(i * Constants.STEP_TIME_SEC, model.getSpeed());
 			positionSeries.add(i * Constants.STEP_TIME_SEC, model.getPosition());
+            System.out.println(i * Constants.STEP_TIME_SEC + ",0.0," + model.getSpeed()
+                    + "," + model.getPosition());
 		}
 
+		// Aggregate the data series into a single data set.
 		XYSeriesCollection dataset = new XYSeriesCollection();
 		dataset.addSeries(speedSeries);
 		dataset.addSeries(positionSeries);
@@ -129,14 +154,45 @@ public class ImpulseResponseChart extends JFrame {
 		return dataset;
 	}
 
-	private JPanel initTextFieldPanel(String name, JTextField field) {
-	    JPanel panel = new JPanel();
-	    Border lineBorder = BorderFactory.createLineBorder(Color.BLACK);
-	    panel.setBorder(BorderFactory.createTitledBorder(lineBorder));
-	    panel.add(new JLabel(name));
-	    panel.add(field);
-	    return panel;
-	}
+	private XYSeriesCollection readRecordedData(String fileName) {
+        // Create the data series in which to store the data.
+        final XYSeries inputSeries = new XYSeries("Actual Input");
+        final XYSeries speedSeries = new XYSeries("Actual Speed");
+        final XYSeries positionSeries = new XYSeries("Actual Position");
+
+        // Read the data from the file.
+        // The expected format for a line of data is:
+        //     time,input,speed,position
+        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+            int lineNum = 0;;
+            String line;
+            while ((line = br.readLine()) != null) {
+                // Parse the line.
+                lineNum++;
+                String[] values = line.split(",");
+                if (values.length != 4) {
+                    System.out.println("Wrong number of values line " + lineNum
+                            + ", found " + values.length + " items, expected 4.");
+                    continue;
+                }
+
+                // Gather the parsed data into the series.
+                final double time = Double.parseDouble(values[0]);
+                inputSeries.add(time, Double.parseDouble(values[1]));
+                speedSeries.add(time, Double.parseDouble(values[2]));
+                positionSeries.add(time, Double.parseDouble(values[3]));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+        // Aggregate whatever data we've successfully read.
+        final XYSeriesCollection dataset = new XYSeriesCollection();
+        dataset.addSeries(inputSeries);
+        dataset.addSeries(speedSeries);
+        dataset.addSeries(positionSeries);
+        return dataset;
+    }
 
     public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
