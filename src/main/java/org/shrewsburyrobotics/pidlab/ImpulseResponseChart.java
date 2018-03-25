@@ -2,6 +2,7 @@ package org.shrewsburyrobotics.pidlab;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -49,7 +50,8 @@ public class ImpulseResponseChart extends JFrame implements ActionListener {
         chartPanel = new ChartPanel(createChart());
 
         // Create controller panels where we read input values from.
-        JPanel motorPanel = createMotorPanel(chartPanel); 
+        JPanel motorPanel = createMotorPanel(chartPanel);
+        motorPanel.setMaximumSize(new Dimension(700, 200));
 
         // Create the main panel containing all of the other panels.
         JPanel mainPanel = new JPanel();
