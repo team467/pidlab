@@ -78,10 +78,6 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 		timeField.setName("Time Constant");
 		deadField.setName("Dead Time");
 
-		gainField.addActionListener(this);
-		timeField.addActionListener(this);
-		deadField.addActionListener(this);
-
 		JPanel gainPanel = initTextFieldPanel("Gain", gainField);
 		JPanel timePanel = initTextFieldPanel("Time Constant", timeField);
 		JPanel deadPanel = initTextFieldPanel("Dead Time", deadField);
@@ -102,10 +98,6 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 		pField.setName("P");
 		iField.setName("I");
 		dField.setName("D");
-
-		pField.addActionListener(this);
-		iField.addActionListener(this);
-		dField.addActionListener(this);
 
 		JPanel pPanel = initTextFieldPanel("P", pField);
 		JPanel iPanel = initTextFieldPanel("I", iField);
@@ -136,6 +128,8 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 		pButton.addActionListener(this);
 		iButton.addActionListener(this);
 		dButton.addActionListener(this);
+
+		pButton.setSelected(true);
 
 		JPanel pidSelectorPanel = new JPanel();
 		pidSelectorPanel.add(pButton);
@@ -176,15 +170,15 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 
 		XYSeries targetSeries = new XYSeries("Target");
 
-		if (dButton.isSelected()) {
-			plusController = new PIDController(kP, kI, 1.5*kD);
-			minusController = new PIDController(kP, kI, 0.5*kD);
+		if (pButton.isSelected()) {
+			plusController = new PIDController(1.5*kP, kI, kD);
+			minusController = new PIDController(0.5*kP, kI, kD);
 		} else if (iButton.isSelected()) {
 			plusController = new PIDController(kP, 1.5*kI, kD);
 			minusController = new PIDController(kP, 0.5*kI, kD);
-		} else { // Default p
-			plusController = new PIDController(1.5*kP, kI, kD);
-			minusController = new PIDController(0.5*kP, kI, kD);
+		} else { // Neither P nor I, must be D
+			plusController = new PIDController(kP, kI, 1.5*kD);
+			minusController = new PIDController(kP, kI, 0.5*kD);
 		}
 
 		mainController.setError(targetDistance);
@@ -240,6 +234,7 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 	private JPanel initTextFieldPanel(String name, JTextField field) {
 		JPanel panel = new JPanel();
 		panel.add(new JLabel(name + ":"));
+		field.addActionListener(this);
 		panel.add(field);
 		return panel;
 	}
