@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
@@ -24,18 +25,26 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
-import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.shrewsburyrobotics.pidlab.model.Constants;
 import org.shrewsburyrobotics.pidlab.model.MotorModel;
 import org.shrewsburyrobotics.pidlab.model.Robot2018Model;
 
-class ImpulseResponseChart extends JFrame implements ActionListener {
+class ImpulseResponseChart extends JFrame { //implements ActionListener {
 	private static final long serialVersionUID = 1L;
 
-	private ChartPanel chartPanel;
+	// Data set indices.
+    static final int SIMULATION_SPEED = 0;
+    static final int SIMULATION_POSITION = 2;
+    static final int RECORDED_SPEED = 1;
+    static final int RECORDED_POSITION = 3;
 
+    // Axes indices.
+    static final int TIME_AXIS = 0;
+    static final int SPEED_AXIS = 0;
+    static final int POSITION_AXIS = 1;
+    
     private JTextField gainField = new JTextField("10", 6);
     private JTextField timeField = new JTextField("5", 4);
     private JTextField deadField = new JTextField("0.2", 4);
@@ -45,7 +54,7 @@ class ImpulseResponseChart extends JFrame implements ActionListener {
 		super(title);
 
         // Create viewer panel in which to display the chart.
-        chartPanel = new ChartPanel(createChart());
+        ChartPanel chartPanel = new ChartPanel(createChart());
 
         // Create controller panels where we read input values from.
         JPanel motorPanel = createMotorPanel(chartPanel);
@@ -59,7 +68,7 @@ class ImpulseResponseChart extends JFrame implements ActionListener {
         setContentPane(mainPanel);
 	}
 
-    private JPanel initTextFieldPanel(String name, JTextField field) {
+    private JPanel initTextFieldPanel(String name, JTextField field, ChartPanel chartPanel) {
         // Create a label, text field, and a panel to contain them.
         JPanel panel = new JPanel();
         Border lineBorder = BorderFactory.createLineBorder(Color.BLACK);
@@ -68,7 +77,12 @@ class ImpulseResponseChart extends JFrame implements ActionListener {
         panel.add(field);
 
         // If the text field changes, notify this class to re-render.
-        field.addActionListener(this);
+        field.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                chartPanel.setChart(createChart());
+            }
+        });
 
         return panel;
     }
@@ -78,10 +92,10 @@ class ImpulseResponseChart extends JFrame implements ActionListener {
         Border lineBorder = BorderFactory.createLineBorder(Color.BLACK);
         panel.setBorder(BorderFactory.createTitledBorder(lineBorder, "Motor Properties"));
 
-        JPanel gainPanel = initTextFieldPanel("Gain", gainField);
-        JPanel timePanel = initTextFieldPanel("Time Constant", timeField);
-        JPanel deadPanel = initTextFieldPanel("Dead Time", deadField);
-        JPanel plotTimePanel = initTextFieldPanel("Plot Time (secs)", plotTimeField);
+        JPanel gainPanel = initTextFieldPanel("Gain", gainField, chartPanel);
+        JPanel timePanel = initTextFieldPanel("Time Constant", timeField, chartPanel);
+        JPanel deadPanel = initTextFieldPanel("Dead Time", deadField, chartPanel);
+        JPanel plotTimePanel = initTextFieldPanel("Plot Time (secs)", plotTimeField, chartPanel);
 
         panel.add(gainPanel);
         panel.add(timePanel);
@@ -91,15 +105,6 @@ class ImpulseResponseChart extends JFrame implements ActionListener {
         return panel;
     }
 
-    static final int SIMULATION_SPEED = 0;
-    static final int SIMULATION_POSITION = 2;
-    static final int RECORDED_SPEED = 1;
-    static final int RECORDED_POSITION = 3;
-    
-    static final int TIME_AXIS = 0;
-    static final int SPEED_AXIS = 0;
-    static final int POSITION_AXIS = 1;
-    
     private JFreeChart createChart() {
         // Get the data.
         final XYSeriesCollection simulationData = createSimulationData();
@@ -108,27 +113,12 @@ class ImpulseResponseChart extends JFrame implements ActionListener {
         // Create the plot.
         final XYPlot plot = new XYPlot();
 
-        // Setup the renderers.
-        XYItemRenderer renderer = new StandardXYItemRenderer();
-        plot.setRenderer(SIMULATION_SPEED, renderer);
-        renderer.setSeriesStroke(0, new BasicStroke(2.0F));
-        renderer.setSeriesPaint(0, Color.RED);
+        // Setup a renderer for each data series.
+        addRendererToSeries(plot, SIMULATION_SPEED, Color.RED);
+        addRendererToSeries(plot, SIMULATION_POSITION, Color.BLUE);
+        addRendererToSeries(plot, RECORDED_SPEED, Color.PINK);
+        addRendererToSeries(plot, RECORDED_POSITION, Color.CYAN);
         
-        renderer = new StandardXYItemRenderer();
-        plot.setRenderer(SIMULATION_POSITION, renderer);
-        renderer.setSeriesStroke(0, new BasicStroke(2.0F));
-        renderer.setSeriesPaint(0, Color.BLUE);
-
-        renderer = new StandardXYItemRenderer();
-        plot.setRenderer(RECORDED_SPEED, renderer);
-        renderer.setSeriesStroke(0, new BasicStroke(2.0F));
-        renderer.setSeriesPaint(0, Color.PINK);
-
-        renderer = new StandardXYItemRenderer();
-        plot.setRenderer(RECORDED_POSITION, renderer);
-        renderer.setSeriesStroke(0, new BasicStroke(2.0F));
-        renderer.setSeriesPaint(0, Color.CYAN);
-
         // Set the axes.
         plot.setDomainAxis(new NumberAxis("Time (sec)"));
         plot.setRangeAxis(SPEED_AXIS, new NumberAxis("Speed (ft/sec)"));
@@ -157,6 +147,13 @@ class ImpulseResponseChart extends JFrame implements ActionListener {
         return chart;
     }
 
+    private void addRendererToSeries(final XYPlot plot, int seriesIndex, Color color) {
+        StandardXYItemRenderer renderer = new StandardXYItemRenderer();
+        plot.setRenderer(seriesIndex, renderer);
+        renderer.setSeriesStroke(0, new BasicStroke(2.0F));
+        renderer.setSeriesPaint(0, color);
+    }
+
     private XYSeriesCollection createSimulationData() {
 		double plotTimeSecs = Double.parseDouble(plotTimeField.getText());
 		int numTicks = (int)(plotTimeSecs / Constants.STEP_TIME_SEC);
@@ -175,15 +172,15 @@ class ImpulseResponseChart extends JFrame implements ActionListener {
 			model.step(1.0);
 			speedSeries.add(i * Constants.STEP_TIME_SEC, model.getSpeed());
 			positionSeries.add(i * Constants.STEP_TIME_SEC, model.getPosition());
-			System.out.println(i * Constants.STEP_TIME_SEC + ",1.0," + model.getSpeed()
-			        + "," + model.getPosition());
+//			System.out.println(i * Constants.STEP_TIME_SEC + ",1.0," + model.getSpeed()
+//			        + "," + model.getPosition());
 		}
 		for (int i = numTicks/2; i < numTicks; i++) {
 			model.step(0.0);
 			speedSeries.add(i * Constants.STEP_TIME_SEC, model.getSpeed());
 			positionSeries.add(i * Constants.STEP_TIME_SEC, model.getPosition());
-            System.out.println(i * Constants.STEP_TIME_SEC + ",0.0," + model.getSpeed()
-                    + "," + model.getPosition());
+//            System.out.println(i * Constants.STEP_TIME_SEC + ",0.0," + model.getSpeed()
+//                    + "," + model.getPosition());
 		}
 
 		// Aggregate the data series into a single data set.
@@ -203,7 +200,7 @@ class ImpulseResponseChart extends JFrame implements ActionListener {
         // The expected format for a line of data is:
         //     time,input,speed,position
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
-            int lineNum = 0;;
+            int lineNum = 0;
             String line;
             while ((line = br.readLine()) != null) {
                 // Parse the line.
@@ -221,6 +218,8 @@ class ImpulseResponseChart extends JFrame implements ActionListener {
                 speedSeries.add(time, Double.parseDouble(values[2]));
                 positionSeries.add(time, Double.parseDouble(values[3]));
             }
+        } catch (FileNotFoundException e) {
+            System.err.println(e);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -231,11 +230,6 @@ class ImpulseResponseChart extends JFrame implements ActionListener {
         dataset.addSeries(positionSeries);
         return dataset;
     }
-
-    @Override
-	public void actionPerformed(ActionEvent e) {
-		chartPanel.setChart(createChart());
-	}
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
