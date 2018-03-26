@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 
 /**
- * MotorModel simulates a motor as its input voltage is changed over time.
+ * MotorModel simulates a motor as its input signal is changed over time.
  */
 public class MotorModel {
 	private final double gain; // Kp
@@ -38,6 +38,8 @@ public class MotorModel {
 
 	/**
 	 * Adjust for friction be reducing the input value by 0.1 (closer to zero).
+	 * 
+	 * TODO John: I don't think this is modeled correctly yet.
 	 */
 	private double adjustForFriction(double drive) {
 		if (drive > 0) {

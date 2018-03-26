@@ -24,11 +24,12 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.shrewsburyrobotics.pidlab.model.Constants;
 import org.shrewsburyrobotics.pidlab.model.MotorModel;
+import org.shrewsburyrobotics.pidlab.model.Robot2018Model;
 
 class ImpulseResponseChart extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 1L;
@@ -90,32 +91,69 @@ class ImpulseResponseChart extends JFrame implements ActionListener {
         return panel;
     }
 
+    static final int SIMULATION_SPEED = 0;
+    static final int SIMULATION_POSITION = 2;
+    static final int RECORDED_SPEED = 1;
+    static final int RECORDED_POSITION = 3;
+    
+    static final int TIME_AXIS = 0;
+    static final int SPEED_AXIS = 0;
+    static final int POSITION_AXIS = 1;
+    
     private JFreeChart createChart() {
         // Get the data.
-        XYSeriesCollection simulationData = createSimulationData();
-        XYSeriesCollection recordedData = readRecordedData("test.data");
-
-        // Create the renderers.
-        StandardXYItemRenderer simulationDataRenderer = new StandardXYItemRenderer();
-        XYLineAndShapeRenderer recordedDataRenderer = new XYLineAndShapeRenderer(false, true);   // Shapes only
+        final XYSeriesCollection simulationData = createSimulationData();
+        final XYSeriesCollection recordedData = readRecordedData("test.data");
         
-        // Create the plot and axes.
-        XYPlot plot = new XYPlot();
-        plot.setDomainAxis(new NumberAxis("Time"));
-        plot.setRangeAxis(new NumberAxis("Value"));
+        // Create the plot.
+        final XYPlot plot = new XYPlot();
 
-        // Add the simulated data to the plot.
-        plot.setDataset(0, simulationData);
-        plot.setRenderer(0, simulationDataRenderer);
-        simulationDataRenderer.setSeriesStroke(0, new BasicStroke(2.0f));
-        simulationDataRenderer.setSeriesStroke(1, new BasicStroke(2.0f));
+        // Setup the renderers.
+        XYItemRenderer renderer = new StandardXYItemRenderer();
+        plot.setRenderer(SIMULATION_SPEED, renderer);
+        renderer.setSeriesStroke(0, new BasicStroke(2.0F));
+        renderer.setSeriesPaint(0, Color.RED);
+        
+        renderer = new StandardXYItemRenderer();
+        plot.setRenderer(SIMULATION_POSITION, renderer);
+        renderer.setSeriesStroke(0, new BasicStroke(2.0F));
+        renderer.setSeriesPaint(0, Color.BLUE);
 
-        // Add the recorded data to the plot.
-        plot.setDataset(1, recordedData);
-        plot.setRenderer(1, recordedDataRenderer);
+        renderer = new StandardXYItemRenderer();
+        plot.setRenderer(RECORDED_SPEED, renderer);
+        renderer.setSeriesStroke(0, new BasicStroke(2.0F));
+        renderer.setSeriesPaint(0, Color.PINK);
+
+        renderer = new StandardXYItemRenderer();
+        plot.setRenderer(RECORDED_POSITION, renderer);
+        renderer.setSeriesStroke(0, new BasicStroke(2.0F));
+        renderer.setSeriesPaint(0, Color.CYAN);
+
+        // Set the axes.
+        plot.setDomainAxis(new NumberAxis("Time (sec)"));
+        plot.setRangeAxis(SPEED_AXIS, new NumberAxis("Speed (ft/sec)"));
+        plot.setRangeAxis(POSITION_AXIS, new NumberAxis("Position (ft)"));
+
+        // Add the data to the plot.
+        plot.setDataset(SIMULATION_SPEED, new XYSeriesCollection(simulationData.getSeries(0)));
+        plot.setDataset(SIMULATION_POSITION, new XYSeriesCollection(simulationData.getSeries(1)));
+        plot.setDataset(RECORDED_SPEED, new XYSeriesCollection(recordedData.getSeries(0)));
+        plot.setDataset(RECORDED_POSITION, new XYSeriesCollection(recordedData.getSeries(1)));
+
+        // Apply same X-axis to all data sets.
+        plot.mapDatasetToDomainAxis(SIMULATION_SPEED, TIME_AXIS);
+        plot.mapDatasetToDomainAxis(SIMULATION_POSITION, TIME_AXIS);
+        plot.mapDatasetToDomainAxis(RECORDED_SPEED, TIME_AXIS);
+        plot.mapDatasetToDomainAxis(RECORDED_POSITION, TIME_AXIS);
+
+        // Each data set gets its own Y-axis.
+        plot.mapDatasetToRangeAxis(SIMULATION_SPEED, SPEED_AXIS);
+        plot.mapDatasetToRangeAxis(SIMULATION_POSITION, POSITION_AXIS);
+        plot.mapDatasetToRangeAxis(RECORDED_SPEED, SPEED_AXIS);
+        plot.mapDatasetToRangeAxis(RECORDED_POSITION, POSITION_AXIS);
 
         // Return a complete chart created from the plot.
-        JFreeChart chart = new JFreeChart("Impulse Response Simulation", plot);
+        final JFreeChart chart = new JFreeChart("Impulse Response Simulation", plot);
         return chart;
     }
 
@@ -124,13 +162,13 @@ class ImpulseResponseChart extends JFrame implements ActionListener {
 		int numTicks = (int)(plotTimeSecs / Constants.STEP_TIME_SEC);
 
 		// Create a motor model based on the current settings from the UI.
-        MotorModel model = new MotorModel(Double.parseDouble(gainField.getText()),
+        MotorModel model = new Robot2018Model(Double.parseDouble(gainField.getText()),
                 Double.parseDouble(timeField.getText()),
                 Double.parseDouble(deadField.getText()));
 
         // Create the data series in which to store the data.
-		XYSeries speedSeries = new XYSeries("Motor speed");
-		XYSeries positionSeries = new XYSeries("Motor position");
+		XYSeries speedSeries = new XYSeries("Simulated speed");
+		XYSeries positionSeries = new XYSeries("Simulated position");
 
 		// Run the simulation.
 		for (int i = 0; i < numTicks/2; i++) {
@@ -158,9 +196,8 @@ class ImpulseResponseChart extends JFrame implements ActionListener {
 
 	private XYSeriesCollection readRecordedData(String fileName) {
         // Create the data series in which to store the data.
-        final XYSeries inputSeries = new XYSeries("Actual Input");
-        final XYSeries speedSeries = new XYSeries("Actual Speed");
-        final XYSeries positionSeries = new XYSeries("Actual Position");
+        final XYSeries speedSeries = new XYSeries("Recorded speed");
+        final XYSeries positionSeries = new XYSeries("Recorded position");
 
         // Read the data from the file.
         // The expected format for a line of data is:
@@ -180,7 +217,7 @@ class ImpulseResponseChart extends JFrame implements ActionListener {
 
                 // Gather the parsed data into the series.
                 final double time = Double.parseDouble(values[0]);
-                inputSeries.add(time, Double.parseDouble(values[1]));
+                // Skipping the "input" value at position 1.
                 speedSeries.add(time, Double.parseDouble(values[2]));
                 positionSeries.add(time, Double.parseDouble(values[3]));
             }
@@ -190,7 +227,6 @@ class ImpulseResponseChart extends JFrame implements ActionListener {
         
         // Aggregate whatever data we've successfully read.
         final XYSeriesCollection dataset = new XYSeriesCollection();
-        dataset.addSeries(inputSeries);
         dataset.addSeries(speedSeries);
         dataset.addSeries(positionSeries);
         return dataset;
