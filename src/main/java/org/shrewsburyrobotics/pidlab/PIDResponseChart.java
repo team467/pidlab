@@ -67,7 +67,14 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 		mainPanel.add(UIPanel);
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS)); 
 		setContentPane(mainPanel);
-}
+	}
+
+	public void init() {
+		setSize(800, 680);
+		setLocationRelativeTo(null);
+		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		setVisible(true);
+	}
 
 	private JPanel createMotorPanel() {
 		JPanel panel = new JPanel();
@@ -253,10 +260,7 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
 			PIDResponseChart example = new PIDResponseChart("PID Lab");
-			example.setSize(800, 680);
-			example.setLocationRelativeTo(null);
-			example.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-			example.setVisible(true);
+			example.init();
 		});
 	}
 
