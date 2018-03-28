@@ -12,13 +12,16 @@ public class MotorModel {
 	private final double deadTime; // theta P
 
 	private final LinkedList<Double> driveMemory;
-	
+
+	// Current acceleration in ticks/second^2.
+	private double currentAcceleration = 0.0;
+
 	// Current speed in ticks/second.
 	private double currentSpeed = 0.0;
 
 	// Current position in ticks.
 	private double currentPosition = 0.0;
-	
+
 	/**
 	 * Create a MotorModel object.
 	 * 
@@ -37,19 +40,6 @@ public class MotorModel {
 	}
 
 	/**
-	 * Adjust for friction be reducing the input value by 0.1 (closer to zero).
-	 * 
-	 * TODO John: I don't think this is modeled correctly yet.
-	 */
-	private double adjustForFriction(double drive) {
-		if (drive > 0) {
-			return Math.max(0.0, drive - Constants.MOTOR_FRICTION);
-		} else {
-			return Math.min(0.0, drive + Constants.MOTOR_FRICTION);
-		}
-	}
-	
-	/**
 	 * Step the motor forward by one time increment.
 	 * 
 	 * @param drive the input signal during this time increment, |drive| <= 1.0
@@ -58,24 +48,30 @@ public class MotorModel {
 	    // Add this drive value to the memory, then extract the oldest one to use for this step.
 	    driveMemory.offerFirst(drive);
 	    drive = driveMemory.pollLast();
-	    
+
 		// Cap the drive value to +- 1.0.
 		drive = Math.min(drive,  1.0);
 		drive = Math.max(drive, -1.0);
 
-		drive = adjustForFriction(drive);
-		
 		// Update motor state.
-		currentSpeed += Constants.STEP_TIME_SEC * (gain * drive - currentSpeed) / timeConstant;
+		currentAcceleration = (gain * drive - currentSpeed) / timeConstant;
+		currentSpeed += Constants.STEP_TIME_SEC * currentAcceleration;
 		currentPosition += Constants.STEP_TIME_SEC * currentSpeed;
 	}
 	
-	/**
-	 * Get the current speed of the motor in ticks/second.
-	 */
-	public double getSpeed() {
-		return currentSpeed;
-	}
+    /**
+     * Get the current speed of the motor in ticks/second.
+     */
+    public double getAcceleration() {
+        return currentAcceleration;
+    }
+
+    /**
+     * Get the current speed of the motor in ticks/second.
+     */
+    public double getSpeed() {
+        return currentSpeed;
+    }
 
 	/**
 	 * Get the current position of the motor in ticks.
@@ -88,8 +84,9 @@ public class MotorModel {
 	 * Reset the motor back to idle state
 	 */
 	public void reset() {
-		currentPosition = 0;
-		currentSpeed = 0;
+		currentPosition = 0.0;
+		currentSpeed = 0.0;
+		currentAcceleration = 0.0;
 		driveMemory.clear();
 	}
 

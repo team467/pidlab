@@ -58,7 +58,7 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
 
         // Create controller panels where we read input values from.
         JPanel motorPanel = createMotorPanel(chartPanel);
-        motorPanel.setMaximumSize(new Dimension(700, 200));
+        motorPanel.setMaximumSize(new Dimension(2000, 200));
 
         // Create the main panel containing all of the other panels.
         JPanel mainPanel = new JPanel();
@@ -92,10 +92,10 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
         Border lineBorder = BorderFactory.createLineBorder(Color.BLACK);
         panel.setBorder(BorderFactory.createTitledBorder(lineBorder, "Motor Properties"));
 
-        JPanel gainPanel = initTextFieldPanel("Gain", gainField, chartPanel);
-        JPanel timePanel = initTextFieldPanel("Time Constant", timeField, chartPanel);
-        JPanel deadPanel = initTextFieldPanel("Dead Time", deadField, chartPanel);
-        JPanel plotTimePanel = initTextFieldPanel("Plot Time (secs)", plotTimeField, chartPanel);
+        JPanel gainPanel = initTextFieldPanel("Gain (ft/sec)", gainField, chartPanel);
+        JPanel timePanel = initTextFieldPanel("Time Constant (sec)", timeField, chartPanel);
+        JPanel deadPanel = initTextFieldPanel("Dead Time (sec)", deadField, chartPanel);
+        JPanel plotTimePanel = initTextFieldPanel("Plot Time (sec)", plotTimeField, chartPanel);
 
         panel.add(gainPanel);
         panel.add(timePanel);
@@ -108,7 +108,7 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
     private JFreeChart createChart() {
         // Get the data.
         final XYSeriesCollection simulationData = createSimulationData();
-        final XYSeriesCollection recordedData = readRecordedData("test.data");
+        final XYSeriesCollection recordedData = readRecordedData("RobotData.csv");
         
         // Create the plot.
         final XYPlot plot = new XYPlot();
@@ -168,19 +168,12 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
 		XYSeries positionSeries = new XYSeries("Simulated position");
 
 		// Run the simulation.
-		for (int i = 0; i < numTicks/2; i++) {
+		for (int i = 0; i < numTicks; i++) {
 			model.step(1.0);
 			speedSeries.add(i * Constants.STEP_TIME_SEC, model.getSpeed());
 			positionSeries.add(i * Constants.STEP_TIME_SEC, model.getPosition());
 //			System.out.println(i * Constants.STEP_TIME_SEC + ",1.0," + model.getSpeed()
-//			        + "," + model.getPosition());
-		}
-		for (int i = numTicks/2; i < numTicks; i++) {
-			model.step(0.0);
-			speedSeries.add(i * Constants.STEP_TIME_SEC, model.getSpeed());
-			positionSeries.add(i * Constants.STEP_TIME_SEC, model.getPosition());
-//            System.out.println(i * Constants.STEP_TIME_SEC + ",0.0," + model.getSpeed()
-//                    + "," + model.getPosition());
+//			        + "," + model.getPosition() + "," + model.getAcceleration());
 		}
 
 		// Aggregate the data series into a single data set.
@@ -211,7 +204,7 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
                             + ", found " + values.length + " items, expected 4.");
                     continue;
                 }
-
+                
                 // Gather the parsed data into the series.
                 final double time = Double.parseDouble(values[0]);
                 // Skipping the "input" value at position 1.
