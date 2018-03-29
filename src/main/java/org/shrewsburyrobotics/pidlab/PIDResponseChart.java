@@ -182,17 +182,18 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 			minusController = new PIDController(kP, kI, 0.5*kD);
 		}
 
-		mainController.setError(targetDistance);
-		plusController.setError(targetDistance);
-		minusController.setError(targetDistance);
+		double targetDistanceTicks = Robot2018Model.feetToTicks(targetDistance);
+		mainController.setError(targetDistanceTicks);
+		plusController.setError(targetDistanceTicks);
+		minusController.setError(targetDistanceTicks);
 
 		try (Formatter formatter = new Formatter(System.out)) {
 			for (int i = 0; i < numTicks; i++) {
 				final double time = i * Constants.STEP_TIME_SEC;
 
-				iterate(mainMotor, mainController, mainSeries, targetDistance, time);
-				iterate(plusMotor, plusController, plusSeries, targetDistance, time);
-				iterate(minusMotor, minusController, minusSeries, targetDistance, time);
+				iterate(mainMotor, mainController, mainSeries, targetDistanceTicks, time);
+				iterate(plusMotor, plusController, plusSeries, targetDistanceTicks, time);
+				iterate(minusMotor, minusController, minusSeries, targetDistanceTicks, time);
 				targetSeries.add(time, targetDistance);
 
 				formatter.format("%f,%f\n", time, mainMotor.getPosition());
@@ -209,8 +210,8 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 	}
 
 	private void iterate(MotorModel motor, PIDController controller, XYSeries series, double targetDistance, double time) {
-		double drive = controller.calculate(motor.getPosition(), motor.getSpeed(),
-				Constants.STEP_TIME_SEC, targetDistance);
+		double drive = controller.calculate(Robot2018Model.feetToTicks(motor.getPosition()),
+				Robot2018Model.feetToTicks(motor.getSpeed()), Constants.STEP_TIME_SEC, targetDistance);
 		motor.step(drive);
 		series.add(time, motor.getPosition());
 	}

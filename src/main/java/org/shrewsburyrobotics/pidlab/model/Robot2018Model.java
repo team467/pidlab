@@ -26,11 +26,11 @@ public class Robot2018Model extends MotorModel {
         super(feetToTicks(gain), timeConstant, deadTime);
     }
 
-    private static double ticksToFeet(double ticks) {
+    public static double ticksToFeet(double ticks) {
         return ticks / TICKS_PER_FOOT;
     }
     
-    private static double feetToTicks(double feet) {
+    public static double feetToTicks(double feet) {
         return feet  * TICKS_PER_FOOT;
     }
     
