@@ -232,7 +232,7 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
                 position -= posCorrection;
 
                 // Skipping the "input" value at position 1.
-                speedSeries.add(time, -10 * Double.parseDouble(values[4]));
+                speedSeries.add(time, -Double.parseDouble(values[4]));
                 positionSeries.add(time, position);
             }
         } catch (FileNotFoundException e) {
