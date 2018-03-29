@@ -108,7 +108,7 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
     private JFreeChart createChart() {
         // Get the data.
         final XYSeriesCollection simulationData = createSimulationData();
-        final XYSeriesCollection recordedData = readRecordedData("RobotData.csv");
+        final XYSeriesCollection recordedData = readRecordedData("Robot467.log");
         
         // Create the plot.
         final XYPlot plot = new XYPlot();
@@ -189,6 +189,9 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
         final XYSeries speedSeries = new XYSeries("Recorded speed");
         final XYSeries positionSeries = new XYSeries("Recorded position");
 
+        double timeCorrection = Double.MAX_VALUE;
+        double posCorrection = Double.MAX_VALUE;
+        
         // Read the data from the file.
         // The expected format for a line of data is:
         //     time,input,speed,position
@@ -198,18 +201,39 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
             while ((line = br.readLine()) != null) {
                 // Parse the line.
                 lineNum++;
-                String[] values = line.split(",");
-                if (values.length != 4) {
-                    System.out.println("Wrong number of values line " + lineNum
-                            + ", found " + values.length + " items, expected 4.");
+
+                String[] tokens = line.split(" ");                
+                if (tokens.length != 5) {
+                    System.out.println("Wrong number of tokens line " + lineNum
+                            + ", found " + tokens.length + " items, expected 5.");
                     continue;
                 }
-                
+
                 // Gather the parsed data into the series.
-                final double time = Double.parseDouble(values[0]);
+                String timeStr = tokens[0].replaceAll("ms", "");
+                double time = Double.parseDouble(timeStr)/1000.0;
+                
+                if (time < timeCorrection) {
+                	timeCorrection = time;
+                }
+                time -= timeCorrection;
+
+                String[] values = tokens[4].split(",");
+                if (values.length != 6) {
+                    System.out.println("Wrong number of values line " + lineNum
+                            + ", found " + values.length + " items, expected 6.");
+                    continue;
+                }
+
+                double position = -Double.parseDouble(values[5]);
+                if (position < posCorrection) {
+                	posCorrection = position;
+                }
+                position -= posCorrection;
+
                 // Skipping the "input" value at position 1.
-                speedSeries.add(time, Double.parseDouble(values[2]));
-                positionSeries.add(time, Double.parseDouble(values[3]));
+                speedSeries.add(time, -10 * Double.parseDouble(values[4]));
+                positionSeries.add(time, position);
             }
         } catch (FileNotFoundException e) {
             System.err.println(e);
