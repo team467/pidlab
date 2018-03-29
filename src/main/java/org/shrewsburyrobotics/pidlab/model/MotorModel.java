@@ -35,7 +35,7 @@ public class MotorModel {
 		this.gain = gain;
 		this.timeConstant = timeConstant;
 		this.deadTime = deadTime;
-		int numDeadTimeTicks = (int)(deadTime / Constants.STEP_TIME_SEC);
+		int numDeadTimeTicks = (int)(deadTime / Constants.ROBORIO_STEP_TIME_SEC);
 		driveMemory = new LinkedList<Double>(Collections.nCopies(numDeadTimeTicks, 0.0));
 	}
 
@@ -55,8 +55,8 @@ public class MotorModel {
 
 		// Update motor state.
 		currentAcceleration = (gain * drive - currentSpeed) / timeConstant;
-		currentSpeed += Constants.STEP_TIME_SEC * currentAcceleration;
-		currentPosition += Constants.STEP_TIME_SEC * currentSpeed;
+		currentSpeed += Constants.ROBORIO_STEP_TIME_SEC * currentAcceleration;
+		currentPosition += Constants.ROBORIO_STEP_TIME_SEC * currentSpeed;
 	}
 	
     /**

@@ -155,7 +155,7 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 
 	private XYDataset createDataset(double kP, double kI, double kD, double targetDistance) {
 		double plotTimeSecs = query(durationField);
-		int numTicks = (int)(plotTimeSecs / Constants.STEP_TIME_SEC);
+		int numTicks = (int)(plotTimeSecs / Constants.ROBORIO_STEP_TIME_SEC);
 
 		PIDController mainController = new PIDController(kP, kI, kD);
 		MotorModel mainMotor = makeMotor();
@@ -189,7 +189,7 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 
 		try (Formatter formatter = new Formatter(System.out)) {
 			for (int i = 0; i < numTicks; i++) {
-				final double time = i * Constants.STEP_TIME_SEC;
+				final double time = i * Constants.ROBORIO_STEP_TIME_SEC;
 
 				iterate(mainMotor, mainController, mainSeries, targetDistanceTicks, time);
 				iterate(plusMotor, plusController, plusSeries, targetDistanceTicks, time);
@@ -211,7 +211,7 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 
 	private void iterate(MotorModel motor, PIDController controller, XYSeries series, double targetDistance, double time) {
 		double drive = controller.calculate(Robot2018Model.feetToTicks(motor.getPosition()),
-				Robot2018Model.feetToTicks(motor.getSpeed()), Constants.STEP_TIME_SEC, targetDistance);
+				Robot2018Model.feetToTicks(motor.getSpeed()), Constants.ROBORIO_STEP_TIME_SEC, targetDistance);
 		motor.step(drive);
 		series.add(time, motor.getPosition());
 	}

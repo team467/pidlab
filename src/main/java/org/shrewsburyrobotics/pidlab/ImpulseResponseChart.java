@@ -156,7 +156,7 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
 
     private XYSeriesCollection createSimulationData() {
 		double plotTimeSecs = Double.parseDouble(plotTimeField.getText());
-		int numTicks = (int)(plotTimeSecs / Constants.STEP_TIME_SEC);
+		int numTicks = (int)(plotTimeSecs / Constants.ROBORIO_STEP_TIME_SEC);
 
 		// Create a motor model based on the current settings from the UI.
         MotorModel model = new Robot2018Model(Double.parseDouble(gainField.getText()),
@@ -170,8 +170,8 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
 		// Run the simulation.
 		for (int i = 0; i < numTicks; i++) {
 			model.step(1.0);
-			speedSeries.add(i * Constants.STEP_TIME_SEC, model.getSpeed());
-			positionSeries.add(i * Constants.STEP_TIME_SEC, model.getPosition());
+			speedSeries.add(i * Constants.ROBORIO_STEP_TIME_SEC, model.getSpeed());
+			positionSeries.add(i * Constants.ROBORIO_STEP_TIME_SEC, model.getPosition());
 //			System.out.println(i * Constants.STEP_TIME_SEC + ",1.0," + model.getSpeed()
 //			        + "," + model.getPosition() + "," + model.getAcceleration());
 		}
