@@ -108,7 +108,7 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
     private JFreeChart createChart() {
         // Get the data.
         final XYSeriesCollection simulationData = createSimulationData();
-        final XYSeriesCollection recordedData = readRecordedData("logs/Robot100.log");
+        final XYSeriesCollection recordedData = readRecordedData("logs/turn100.log");
         
         // Create the plot.
         final XYPlot plot = new XYPlot();
