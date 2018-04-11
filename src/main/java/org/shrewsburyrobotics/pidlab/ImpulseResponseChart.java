@@ -36,9 +36,11 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
 
 	// Data set indices.
     static final int SIMULATION_SPEED = 0;
-    static final int SIMULATION_POSITION = 2;
-    static final int RECORDED_SPEED = 1;
-    static final int RECORDED_POSITION = 3;
+    static final int SIMULATION_POSITION = 3;
+    static final int LEFT_SPEED = 1;
+    static final int LEFT_POSITION = 4;
+    static final int RIGHT_SPEED = 2;
+    static final int RIGHT_POSITION = 5;
 
     // Axes indices.
     static final int TIME_AXIS = 0;
@@ -108,7 +110,7 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
     private JFreeChart createChart() {
         // Get the data.
         final XYSeriesCollection simulationData = createSimulationData();
-        final XYSeriesCollection recordedData = readRecordedData("logs/turn100.log");
+        final XYSeriesCollection recordedData = readRecordedData("logs/Robot100.log");
         
         // Create the plot.
         final XYPlot plot = new XYPlot();
@@ -116,8 +118,10 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
         // Setup a renderer for each data series.
         addRendererToSeries(plot, SIMULATION_SPEED, Color.RED);
         addRendererToSeries(plot, SIMULATION_POSITION, Color.BLUE);
-        addRendererToSeries(plot, RECORDED_SPEED, Color.PINK);
-        addRendererToSeries(plot, RECORDED_POSITION, Color.CYAN);
+        addRendererToSeries(plot, LEFT_SPEED, Color.PINK);
+        addRendererToSeries(plot, LEFT_POSITION, Color.CYAN);
+        addRendererToSeries(plot, RIGHT_SPEED, Color.MAGENTA);
+        addRendererToSeries(plot, RIGHT_POSITION, Color.GREEN);
         
         // Set the axes.
         plot.setDomainAxis(new NumberAxis("Time (sec)"));
@@ -127,20 +131,26 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
         // Add the data to the plot.
         plot.setDataset(SIMULATION_SPEED, new XYSeriesCollection(simulationData.getSeries(0)));
         plot.setDataset(SIMULATION_POSITION, new XYSeriesCollection(simulationData.getSeries(1)));
-        plot.setDataset(RECORDED_SPEED, new XYSeriesCollection(recordedData.getSeries(0)));
-        plot.setDataset(RECORDED_POSITION, new XYSeriesCollection(recordedData.getSeries(1)));
+        plot.setDataset(LEFT_SPEED, new XYSeriesCollection(recordedData.getSeries(0)));
+        plot.setDataset(LEFT_POSITION, new XYSeriesCollection(recordedData.getSeries(1)));
+        plot.setDataset(RIGHT_SPEED, new XYSeriesCollection(recordedData.getSeries(2)));
+        plot.setDataset(RIGHT_POSITION, new XYSeriesCollection(recordedData.getSeries(3)));
 
         // Apply same X-axis to all data sets.
         plot.mapDatasetToDomainAxis(SIMULATION_SPEED, TIME_AXIS);
         plot.mapDatasetToDomainAxis(SIMULATION_POSITION, TIME_AXIS);
-        plot.mapDatasetToDomainAxis(RECORDED_SPEED, TIME_AXIS);
-        plot.mapDatasetToDomainAxis(RECORDED_POSITION, TIME_AXIS);
+        plot.mapDatasetToDomainAxis(LEFT_SPEED, TIME_AXIS);
+        plot.mapDatasetToDomainAxis(LEFT_POSITION, TIME_AXIS);
+        plot.mapDatasetToDomainAxis(RIGHT_SPEED, TIME_AXIS);
+        plot.mapDatasetToDomainAxis(RIGHT_POSITION, TIME_AXIS);
 
         // Each data set gets its own Y-axis.
         plot.mapDatasetToRangeAxis(SIMULATION_SPEED, SPEED_AXIS);
         plot.mapDatasetToRangeAxis(SIMULATION_POSITION, POSITION_AXIS);
-        plot.mapDatasetToRangeAxis(RECORDED_SPEED, SPEED_AXIS);
-        plot.mapDatasetToRangeAxis(RECORDED_POSITION, POSITION_AXIS);
+        plot.mapDatasetToRangeAxis(LEFT_SPEED, SPEED_AXIS);
+        plot.mapDatasetToRangeAxis(LEFT_POSITION, POSITION_AXIS);
+        plot.mapDatasetToRangeAxis(RIGHT_SPEED, SPEED_AXIS);
+        plot.mapDatasetToRangeAxis(RIGHT_POSITION, POSITION_AXIS);
 
         // Return a complete chart created from the plot.
         final JFreeChart chart = new JFreeChart("Impulse Response Simulation", plot);
@@ -186,11 +196,15 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
 
 	private XYSeriesCollection readRecordedData(String fileName) {
         // Create the data series in which to store the data.
-        final XYSeries speedSeries = new XYSeries("Recorded speed");
-        final XYSeries positionSeries = new XYSeries("Recorded position");
+		final XYSeries leftSpeedSeries = new XYSeries("Left speed");
+        final XYSeries leftPositionSeries = new XYSeries("Left position");
+
+        final XYSeries rightSpeedSeries = new XYSeries("Right speed");
+        final XYSeries rightPositionSeries = new XYSeries("Right position");
 
         double timeCorrection = Double.MAX_VALUE;
-        double posCorrection = Double.MAX_VALUE;
+        double leftInitialPosition = Double.MAX_VALUE;
+        double rightInitialPosition = Double.MAX_VALUE;
         
         // Read the data from the file.
         // The expected format for a line of data is:
@@ -224,16 +238,26 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
                             + ", found " + values.length + " items, expected 6.");
                     continue;
                 }
-
-                double position = -Double.parseDouble(values[5]);
-                if (position < posCorrection) {
-                	posCorrection = position;
+                
+                leftSpeedSeries.add(time, Double.parseDouble(values[2]));
+                double leftPosition = Double.parseDouble(values[3]);
+                if (leftPosition < leftInitialPosition) {
+                	leftInitialPosition = leftPosition;
                 }
-                position -= posCorrection;
+                leftPosition -= leftInitialPosition;
 
                 // Skipping the "input" value at position 1.
-                speedSeries.add(time, -Double.parseDouble(values[4]));
-                positionSeries.add(time, position);
+                leftPositionSeries.add(time, leftPosition);
+
+                rightSpeedSeries.add(time, -Double.parseDouble(values[4]));
+                double rightPosition = -Double.parseDouble(values[5]);
+                if (rightPosition < rightInitialPosition) {
+                	rightInitialPosition = rightPosition;
+                }
+                rightPosition -= rightInitialPosition;
+
+                // Skipping the "input" value at position 1.
+                rightPositionSeries.add(time, rightPosition);
             }
         } catch (FileNotFoundException e) {
             System.err.println(e);
@@ -243,8 +267,10 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
         
         // Aggregate whatever data we've successfully read.
         final XYSeriesCollection dataset = new XYSeriesCollection();
-        dataset.addSeries(speedSeries);
-        dataset.addSeries(positionSeries);
+        dataset.addSeries(leftSpeedSeries);
+        dataset.addSeries(leftPositionSeries);
+        dataset.addSeries(rightSpeedSeries);
+        dataset.addSeries(rightPositionSeries);
         return dataset;
     }
 
