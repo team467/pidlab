@@ -44,6 +44,10 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 	private JRadioButton dButton = new JRadioButton("D");
 	private ButtonGroup pidSelector = new ButtonGroup();
 
+	private JRadioButton leftButton = new JRadioButton("Left");
+	private JRadioButton rightButton = new JRadioButton("Right");
+	private ButtonGroup sideSelector = new ButtonGroup();
+
 	private ChartPanel chartPanel;
 
 	private XYDataset dataset;
@@ -60,13 +64,14 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 		UIPanel.add(leftPanel); 
 		UIPanel.add(rightPanel);
 		UIPanel.add(createPlotPanel());
-//		UIPanel.setMaximumSize(new Dimension(1500, 1200));
+		UIPanel.setMaximumSize(new Dimension(1500, 2000));
+		UIPanel.setLayout(new BoxLayout(UIPanel, BoxLayout.X_AXIS));
 
 		// Create the main panel containing all of the other panels.
 		JPanel mainPanel = new JPanel();
 		mainPanel.add(chartPanel);
 		mainPanel.add(UIPanel);
-		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS)); 
+		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 		setContentPane(mainPanel);
 }
 
@@ -77,17 +82,27 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 
 		targetField.setName("Target Distance");
 
+		sideSelector.add(leftButton);
+		sideSelector.add(rightButton);
 		pidSelector.add(pButton);
 		pidSelector.add(iButton);
 		pidSelector.add(dButton);
 
 		targetField.addActionListener(this);
 		durationField.addActionListener(this);
+		leftButton.addActionListener(this);
+		rightButton.addActionListener(this);
 		pButton.addActionListener(this);
 		iButton.addActionListener(this);
 		dButton.addActionListener(this);
 
+		leftButton.setSelected(true);
 		pButton.setSelected(true);
+
+		JPanel sideSelectorPanel = new JPanel();
+		sideSelectorPanel.add(leftButton);
+		sideSelectorPanel.add(rightButton);
+		sideSelectorPanel.setBorder(BorderFactory.createTitledBorder(lineBorder, "Side Selector"));
 
 		JPanel pidSelectorPanel = new JPanel();
 		pidSelectorPanel.add(pButton);
@@ -99,6 +114,7 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 		panel.add(targetField);
 		panel.add(new JLabel("Duration:"));
 		panel.add(durationField);
+		panel.add(sideSelectorPanel);
 		panel.add(pidSelectorPanel);
 
 		return panel;
@@ -112,21 +128,38 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 		double plotTimeSecs = query(durationField);
 		int numTicks = (int)(plotTimeSecs / Constants.STEP_TIME_SEC);
 
-		double kP = leftPanel.getP();
-		double kI = leftPanel.getI();
-		double kD = leftPanel.getD();
+		PIDController leftController = new PIDController(leftPanel.getP(), leftPanel.getI(), leftPanel.getD());
+		PIDController rightController = new PIDController(rightPanel.getP(), rightPanel.getI(), rightPanel.getD());
 
-		PIDController mainController = new PIDController(kP, kI, kD);
-		MotorModel mainMotor = makeMotor(leftPanel);
-		XYSeries mainSeries = new XYSeries("Set");
+		MotorModel leftMotor = makeMotor(leftPanel);
+		MotorModel rightMotor = makeMotor(rightPanel);
+		XYSeries leftSeries = new XYSeries("Left");
+		XYSeries rightSeries = new XYSeries("Right");
 
 		PIDController plusController;
-		MotorModel plusMotor = makeMotor(leftPanel);
+		MotorModel plusMotor;
 		XYSeries plusSeries = new XYSeries("Plus 50%");
 
 		PIDController minusController;
-		MotorModel minusMotor = makeMotor(leftPanel);
+		MotorModel minusMotor;
 		XYSeries minusSeries = new XYSeries("Minus 50%");
+
+		double kP = 0.0;
+		double kI = 0.0;
+		double kD = 0.0;
+		if (leftButton.isSelected()) {
+			kP = leftPanel.getP();
+			kI = leftPanel.getI();
+			kD = leftPanel.getD();
+			plusMotor = makeMotor(leftPanel);
+			minusMotor = makeMotor(leftPanel);
+		} else { // Right button
+			kP = rightPanel.getP();
+			kI = rightPanel.getI();
+			kD = rightPanel.getD();
+			plusMotor = makeMotor(rightPanel);
+			minusMotor = makeMotor(rightPanel);
+		}
 
 		XYSeries targetSeries = new XYSeries("Target");
 
@@ -141,7 +174,8 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 			minusController = new PIDController(kP, kI, 0.5*kD);
 		}
 
-		mainController.setError(targetDistance);
+		leftController.setError(targetDistance);
+		rightController.setError(targetDistance);
 		plusController.setError(targetDistance);
 		minusController.setError(targetDistance);
 
@@ -149,17 +183,19 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 			for (int i = 0; i < numTicks; i++) {
 				final double time = i * Constants.STEP_TIME_SEC;
 
-				iterate(mainMotor, mainController, mainSeries, targetDistance, time);
+				iterate(leftMotor, leftController, leftSeries, targetDistance, time);
+				iterate(rightMotor, rightController, rightSeries, targetDistance, time);
 				iterate(plusMotor, plusController, plusSeries, targetDistance, time);
 				iterate(minusMotor, minusController, minusSeries, targetDistance, time);
 				targetSeries.add(time, targetDistance);
 
-				formatter.format("%f,%f\n", time, mainMotor.getPosition());
+				formatter.format("%f,%f\n", time, leftMotor.getPosition());
 			}
 		}
 
 		XYSeriesCollection dataset = new XYSeriesCollection();
-		dataset.addSeries(mainSeries);
+		dataset.addSeries(leftSeries);
+		dataset.addSeries(rightSeries);
 		dataset.addSeries(plusSeries);
 		dataset.addSeries(minusSeries);
 		dataset.addSeries(targetSeries);
@@ -187,7 +223,8 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 				PlotOrientation.VERTICAL, wantLegend, wantTooltips, wantURLs);
 		chart.getPlot().setBackgroundPaint(Color.WHITE);
 		chart.getXYPlot().getRenderer().setSeriesStroke(0, new BasicStroke(3.0F));
-		chart.getXYPlot().getRenderer().setSeriesStroke(3, new BasicStroke(3.0F));
+		chart.getXYPlot().getRenderer().setSeriesStroke(1, new BasicStroke(3.0F));
+		chart.getXYPlot().getRenderer().setSeriesStroke(4, new BasicStroke(3.0F));
 		return chart;
 	}
 
