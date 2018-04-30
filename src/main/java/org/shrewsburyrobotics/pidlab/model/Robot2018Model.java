@@ -22,8 +22,8 @@ public class Robot2018Model extends MotorModel {
      * @param deadTime dead time (theta P) is the time between a change in input and
      *        when a measurable response occurs, in seconds
 	 */
-    public Robot2018Model(double gain, double timeConstant, double deadTime) {
-        super(feetToTicks(gain), timeConstant, deadTime);
+    public Robot2018Model(double gain, double timeConstant, double deadTime, double deadZone) {
+        super(feetToTicks(gain), timeConstant, deadTime, deadZone);
     }
 
     private static double ticksToFeet(double ticks) {

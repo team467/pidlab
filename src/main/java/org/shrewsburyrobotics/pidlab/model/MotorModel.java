@@ -10,6 +10,7 @@ public class MotorModel {
 	private final double gain; // Kp
 	private final double timeConstant; // Tp
 	private final double deadTime; // theta P
+	private final double deadZone;
 
 	private final LinkedList<Double> driveMemory;
 
@@ -31,10 +32,11 @@ public class MotorModel {
      * @param deadTime dead time (theta P) is the time between a change in input and when a measurable
      *        response occurs, in seconds
 	 */
-	public MotorModel(double gain, double timeConstant, double deadTime) {
+	public MotorModel(double gain, double timeConstant, double deadTime, double deadZone) {
 		this.gain = gain;
 		this.timeConstant = timeConstant;
 		this.deadTime = deadTime;
+		this.deadZone = deadZone;
 		int numDeadTimeTicks = (int)(deadTime / Constants.STEP_TIME_SEC);
 		driveMemory = new LinkedList<Double>(Collections.nCopies(numDeadTimeTicks, 0.0));
 	}
@@ -48,10 +50,13 @@ public class MotorModel {
 	    // Add this drive value to the memory, then extract the oldest one to use for this step.
 	    driveMemory.offerFirst(drive);
 	    drive = driveMemory.pollLast();
+	    
+	    double driveSignum = Math.signum(drive);
 
 		// Cap the drive value to +- 1.0.
-		drive = Math.min(drive,  1.0);
-		drive = Math.max(drive, -1.0);
+		drive = Math.min(Math.abs(drive),  1.0);
+		
+		drive = driveSignum * Math.max(0, Math.abs((drive - deadZone) / (1 - deadZone)));
 
 		// Update motor state.
 		currentAcceleration = (gain * drive - currentSpeed) / timeConstant;
