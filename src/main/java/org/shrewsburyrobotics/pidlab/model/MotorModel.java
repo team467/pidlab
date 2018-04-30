@@ -12,7 +12,7 @@ public class MotorModel {
 	private final double deadTime; // theta P
 	private final double deadZone;
 
-	private final LinkedList<Double> driveMemory;
+	private final LinkedList<Double> inputMemory;
 
 	// Current acceleration in ticks/second^2.
 	private double currentAcceleration = 0.0;
@@ -38,7 +38,7 @@ public class MotorModel {
 		this.deadTime = deadTime;
 		this.deadZone = deadZone;
 		int numDeadTimeTicks = (int)(deadTime / Constants.STEP_TIME_SEC);
-		driveMemory = new LinkedList<Double>(Collections.nCopies(numDeadTimeTicks, 0.0));
+		inputMemory = new LinkedList<Double>(Collections.nCopies(numDeadTimeTicks, 0.0));
 	}
 
 	/**
@@ -46,17 +46,18 @@ public class MotorModel {
 	 * 
 	 * @param drive the input signal during this time increment, |drive| <= 1.0
 	 */
-	public void step(double drive) {
-	    // Add this drive value to the memory, then extract the oldest one to use for this step.
-	    driveMemory.offerFirst(drive);
-	    drive = driveMemory.pollLast();
+	public void step(double percentVoltage) {
+	    // Add this percent voltage value to the memory, then extract the oldest one to use for this step.
+		// Delays the percent voltage as specified by dead time
+	    inputMemory.offerFirst(percentVoltage);
+	    percentVoltage = inputMemory.pollLast();
 	    
-	    double driveSignum = Math.signum(drive);
+	    double driveSign = Math.signum(percentVoltage);
 
-		// Cap the drive value to +- 1.0.
-		drive = Math.min(Math.abs(drive),  1.0);
+		// Cap the percent voltage to ± 1.0.
+	    percentVoltage = Math.min(Math.abs(percentVoltage), 1.0);
 		
-		drive = driveSignum * Math.max(0, Math.abs((drive - deadZone) / (1 - deadZone)));
+	    double drive = driveSign * Math.max(0, (percentVoltage - deadZone) / (1 - deadZone));
 
 		// Update motor state.
 		currentAcceleration = (gain * drive - currentSpeed) / timeConstant;
@@ -92,7 +93,7 @@ public class MotorModel {
 		currentPosition = 0.0;
 		currentSpeed = 0.0;
 		currentAcceleration = 0.0;
-		driveMemory.clear();
+		inputMemory.clear();
 	}
 
 	@Override
