@@ -48,6 +48,7 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
     private JTextField gainField = new JTextField("10", 6);
     private JTextField timeField = new JTextField("5", 4);
     private JTextField deadField = new JTextField("0.2", 4);
+    private JTextField zoneField = new JTextField("0.1", 4);
     private JTextField plotTimeField = new JTextField("10", 4);
 
     public ImpulseResponseChart(String title) {
@@ -95,11 +96,13 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
         JPanel gainPanel = initTextFieldPanel("Gain (ft/sec)", gainField, chartPanel);
         JPanel timePanel = initTextFieldPanel("Time Constant (sec)", timeField, chartPanel);
         JPanel deadPanel = initTextFieldPanel("Dead Time (sec)", deadField, chartPanel);
+        JPanel zonePanel = initTextFieldPanel("Dead Zone (%V)", zoneField, chartPanel);
         JPanel plotTimePanel = initTextFieldPanel("Plot Time (sec)", plotTimeField, chartPanel);
 
         panel.add(gainPanel);
         panel.add(timePanel);
         panel.add(deadPanel);
+        panel.add(zonePanel);
         panel.add(plotTimePanel);
 
         return panel;
@@ -159,9 +162,8 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
 		int numTicks = (int)(plotTimeSecs / Constants.STEP_TIME_SEC);
 
 		// Create a motor model based on the current settings from the UI.
-        MotorModel model = new Robot2018Model(Double.parseDouble(gainField.getText()),
-                Double.parseDouble(timeField.getText()),
-                Double.parseDouble(deadField.getText()));
+        MotorModel model = new Robot2018Model(
+        		query(gainField), query(timeField), query(deadField), query(zoneField));
 
         // Create the data series in which to store the data.
 		XYSeries speedSeries = new XYSeries("Simulated speed");
@@ -247,6 +249,17 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
         dataset.addSeries(positionSeries);
         return dataset;
     }
+
+	public double query(JTextField field) {
+		double result = 0.0;
+		try {
+			result = Double.parseDouble(field.getText());
+		} catch (NumberFormatException e) {
+			field.setText("0.0");
+			System.err.println(field.getName() + " is invalid, defaulting to zero.");
+		}
+		return result;
+	}
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
