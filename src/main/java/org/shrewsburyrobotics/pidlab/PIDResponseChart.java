@@ -37,6 +37,7 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 	private JTextField gainField = new JTextField("10", 6);
 	private JTextField timeField = new JTextField("5", 4);
 	private JTextField deadField = new JTextField("0.2", 4);
+	private JTextField zoneField = new JTextField("0.1", 4);
 	private JTextField pField = new JTextField("0.0060", 6);
 	private JTextField iField = new JTextField("0.0", 6);
 	private JTextField dField = new JTextField("0.015", 6);
@@ -78,14 +79,17 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 		gainField.setName("Gain");
 		timeField.setName("Time Constant");
 		deadField.setName("Dead Time");
+		zoneField.setName("Dead Zone");
 
 		JPanel gainPanel = initTextFieldPanel("Gain", gainField);
 		JPanel timePanel = initTextFieldPanel("Time Constant", timeField);
 		JPanel deadPanel = initTextFieldPanel("Dead Time", deadField);
+		JPanel zonePanel = initTextFieldPanel("Dead Zone", zoneField);
 
 		panel.add(gainPanel);
 		panel.add(timePanel);
 		panel.add(deadPanel);
+		panel.add(zonePanel);
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
 		return panel;
@@ -148,9 +152,7 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 	}
 
 	private MotorModel makeMotor() {
-		return new Robot2018Model(Double.parseDouble(gainField.getText()),
-			  Double.parseDouble(timeField.getText()),
-			  Double.parseDouble(deadField.getText()));
+		return new Robot2018Model(query(gainField), query(timeField), query(deadField), query(zoneField));
 	}
 
 	private XYDataset createDataset(double kP, double kI, double kD, double targetDistance) {
