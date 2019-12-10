@@ -29,7 +29,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.shrewsburyrobotics.pidlab.model.Constants;
 import org.shrewsburyrobotics.pidlab.model.MotorModel;
 import org.shrewsburyrobotics.pidlab.model.PIDController;
-import org.shrewsburyrobotics.pidlab.model.Robot2018Model;
+import org.shrewsburyrobotics.pidlab.model.Robot2020Model;
 
 public class PIDResponseChart extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 1L;
@@ -148,7 +148,7 @@ public class PIDResponseChart extends JFrame implements ActionListener {
 	}
 
 	private MotorModel makeMotor() {
-		return new Robot2018Model(Double.parseDouble(gainField.getText()),
+		return new Robot2020Model(Double.parseDouble(gainField.getText()),
 			  Double.parseDouble(timeField.getText()),
 			  Double.parseDouble(deadField.getText()));
 	}

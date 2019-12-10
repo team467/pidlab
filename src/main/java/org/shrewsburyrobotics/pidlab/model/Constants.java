@@ -4,5 +4,5 @@ public class Constants {
 	/**
 	 * Time per iteration in seconds.
 	 */
-	public final static double STEP_TIME_SEC = 0.020;
+	public final static double STEP_TIME_SEC = 0.020; //TODO: change these constansts
 }

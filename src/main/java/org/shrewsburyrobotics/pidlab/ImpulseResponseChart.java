@@ -29,7 +29,8 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.shrewsburyrobotics.pidlab.model.Constants;
 import org.shrewsburyrobotics.pidlab.model.MotorModel;
-import org.shrewsburyrobotics.pidlab.model.Robot2018Model;
+import org.shrewsburyrobotics.pidlab.model.Robot2020Model;
+import org.shrewsburyrobotics.pidlab.Index;
 
 class ImpulseResponseChart extends JFrame { //implements ActionListener {
 	private static final long serialVersionUID = 1L;
@@ -108,7 +109,7 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
     private JFreeChart createChart() {
         // Get the data.
         final XYSeriesCollection simulationData = createSimulationData();
-        final XYSeriesCollection recordedData = readRecordedData("Robot467.log");
+        final XYSeriesCollection recordedData = readRecordedData(Index.path);
         
         // Create the plot.
         final XYPlot plot = new XYPlot();
@@ -159,7 +160,7 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
 		int numTicks = (int)(plotTimeSecs / Constants.STEP_TIME_SEC);
 
 		// Create a motor model based on the current settings from the UI.
-        MotorModel model = new Robot2018Model(Double.parseDouble(gainField.getText()),
+        MotorModel model = new Robot2020Model(Double.parseDouble(gainField.getText()),
                 Double.parseDouble(timeField.getText()),
                 Double.parseDouble(deadField.getText()));
 

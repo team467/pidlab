@@ -6,7 +6,8 @@ package org.shrewsburyrobotics.pidlab.model;
  * The RobotModel is based on a simpler MotorModel, but with units converted
  * to match the units useful on a robot (i.e. feet instead of ticks, etc.).
  */
-public class Robot2018Model extends MotorModel {
+public class Robot2020Model extends MotorModel {
+    //TODO: change these constants
     static final double INCHES_PER_REVOLUTION = 18.50;
     static final double FEET_PER_REVOLUTION = INCHES_PER_REVOLUTION / 12;
     static final double TICKS_PER_REVOLUTION = 1024;
@@ -22,7 +23,7 @@ public class Robot2018Model extends MotorModel {
      * @param deadTime dead time (theta P) is the time between a change in input and
      *        when a measurable response occurs, in seconds
 	 */
-    public Robot2018Model(double gain, double timeConstant, double deadTime) {
+    public Robot2020Model(double gain, double timeConstant, double deadTime) {
         super(feetToTicks(gain), timeConstant, deadTime);
     }
 
