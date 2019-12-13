@@ -2,6 +2,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "CodeLens (Launch) - ImpulseResponseChart",
+            "request": "launch",
+            "mainClass": "org.shrewsburyrobotics.pidlab.ImpulseResponseChart",
+            "projectName": "pidlab"
+        },
+        {
+            "type": "java",
             "name": "CodeLens (Launch) - PIDResponseChart",
             "request": "launch",
             "mainClass": "org.shrewsburyrobotics.pidlab.PIDResponseChart",

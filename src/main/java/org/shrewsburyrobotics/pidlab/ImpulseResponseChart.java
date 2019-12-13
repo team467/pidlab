@@ -15,6 +15,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
@@ -54,22 +55,40 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
     public ImpulseResponseChart(String title) {
 		super(title);
 
-        // Create viewer panel in which to display the chart.
-        ChartPanel chartPanel = new ChartPanel(createChart());
+        // Create viewer panel in which to display the chart. 1 and 2 are sides according to the leftmost(1) speed and position
+        ChartPanel chartPanel1 = new ChartPanel(createChart(true));
+        ChartPanel chartPanel2 = new ChartPanel(createChart(false));
+        JTabbedPane tabbedPane = new JTabbedPane();
 
         // Create controller panels where we read input values from.
-        JPanel motorPanel = createMotorPanel(chartPanel);
-        motorPanel.setMaximumSize(new Dimension(2000, 200));
-
+        JPanel motorPanel1 = createMotorPanel(chartPanel1, true);
+        JPanel motorPanel2 = createMotorPanel (chartPanel2, false);
+        motorPanel1.setMaximumSize(new Dimension(2000, 200));
+        motorPanel2.setMaximumSize(new Dimension(2000, 200));
+        JFrame frame = new JFrame();
+        
         // Create the main panel containing all of the other panels.
         JPanel mainPanel = new JPanel();
-        mainPanel.add(chartPanel);
-        mainPanel.add(motorPanel);
+        JPanel secondaryPanel = new JPanel();
+        mainPanel.add(chartPanel1);
+        mainPanel.add(motorPanel1);
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        secondaryPanel.add(chartPanel2);
+        secondaryPanel.add(motorPanel2);
+        secondaryPanel.setLayout(new BoxLayout(secondaryPanel, BoxLayout.Y_AXIS));
         setContentPane(mainPanel);
+
+        tabbedPane.add("side1", mainPanel);
+        tabbedPane.add("side", mainPanel);
+
+        frame.getContentPane().add(tabbedPane);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setSize(640, 480);
+        frame.setLocationByPlatform(true);
+        frame.setVisible(true);
 	}
 
-    private JPanel initTextFieldPanel(String name, JTextField field, ChartPanel chartPanel) {
+    private JPanel initTextFieldPanel(String name, JTextField field, ChartPanel chartPanel, Boolean firstSide) {
         // Create a label, text field, and a panel to contain them.
         JPanel panel = new JPanel();
         Border lineBorder = BorderFactory.createLineBorder(Color.BLACK);
@@ -81,22 +100,22 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
         field.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                chartPanel.setChart(createChart());
+                chartPanel.setChart(createChart(firstSide));
             }
         });
 
         return panel;
     }
 
-    private JPanel createMotorPanel(ChartPanel chartPanel) {
+    private JPanel createMotorPanel(ChartPanel chartPanel, Boolean firstSide) {
         JPanel panel = new JPanel();
         Border lineBorder = BorderFactory.createLineBorder(Color.BLACK);
         panel.setBorder(BorderFactory.createTitledBorder(lineBorder, "Motor Properties"));
 
-        JPanel gainPanel = initTextFieldPanel("Gain (ft/sec)", gainField, chartPanel);
-        JPanel timePanel = initTextFieldPanel("Time Constant (sec)", timeField, chartPanel);
-        JPanel deadPanel = initTextFieldPanel("Dead Time (sec)", deadField, chartPanel);
-        JPanel plotTimePanel = initTextFieldPanel("Plot Time (sec)", plotTimeField, chartPanel);
+        JPanel gainPanel = initTextFieldPanel("Gain (ft/sec)", gainField, chartPanel, firstSide);
+        JPanel timePanel = initTextFieldPanel("Time Constant (sec)", timeField, chartPanel, firstSide);
+        JPanel deadPanel = initTextFieldPanel("Dead Time (sec)", deadField, chartPanel, firstSide);
+        JPanel plotTimePanel = initTextFieldPanel("Plot Time (sec)", plotTimeField, chartPanel, firstSide);
 
         panel.add(gainPanel);
         panel.add(timePanel);
@@ -106,10 +125,10 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
         return panel;
     }
 
-    private JFreeChart createChart() {
+    private JFreeChart createChart(boolean firstSide) {
         // Get the data.
         final XYSeriesCollection simulationData = createSimulationData();
-        final XYSeriesCollection recordedData = readRecordedData(Index.path);
+        final XYSeriesCollection recordedData = readRecordedData(Index.path, firstSide);
         
         // Create the plot.
         final XYPlot plot = new XYPlot();
@@ -185,7 +204,7 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
 		return dataset;
 	}
 
-	private XYSeriesCollection readRecordedData(String fileName) {
+	private XYSeriesCollection readRecordedData(String fileName, boolean firstSide) {
         // Create the data series in which to store the data.
         final XYSeries speedSeries = new XYSeries("Recorded speed");
         final XYSeries positionSeries = new XYSeries("Recorded position");
@@ -195,7 +214,7 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
         
         // Read the data from the file.
         // The expected format for a line of data is:
-        //     time,input,speed,position
+        //     time %20 info %20 telemetry %20 %2D %20 input %2C speed side1 %2C position %2C speed side1%2C position side2 (ASCII encoding to model, which is not needed in the log file)
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
             int lineNum = 0;
             String line;
@@ -203,6 +222,7 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
                 // Parse the line.
                 lineNum++;
 
+                //splitting all that have spaces in between
                 String[] tokens = line.split(" ");                
                 if (tokens.length != 5) {
                     System.out.println("Wrong number of tokens line " + lineNum
@@ -226,14 +246,14 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
                     continue;
                 }
 
-                double position = -Double.parseDouble(values[5]);
+                double position = -Double.parseDouble(values[(firstSide) ? 3 : 5]);
                 if (position < posCorrection) {
                 	posCorrection = position;
                 }
                 position -= posCorrection;
 
                 // Skipping the "input" value at position 1.
-                speedSeries.add(time, -Double.parseDouble(values[4]));
+                speedSeries.add(time, -Double.parseDouble(values[(firstSide)? 2 : 4]));
                 positionSeries.add(time, position);
             }
         } catch (FileNotFoundException e) {
