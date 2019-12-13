@@ -58,32 +58,37 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
         // Create viewer panel in which to display the chart. 1 and 2 are sides according to the leftmost(1) speed and position
         ChartPanel chartPanel1 = new ChartPanel(createChart(true));
         ChartPanel chartPanel2 = new ChartPanel(createChart(false));
-        JTabbedPane tabbedPane = new JTabbedPane();
 
         // Create controller panels where we read input values from.
         JPanel motorPanel1 = createMotorPanel(chartPanel1, true);
         JPanel motorPanel2 = createMotorPanel (chartPanel2, false);
+        
         motorPanel1.setMaximumSize(new Dimension(2000, 200));
         motorPanel2.setMaximumSize(new Dimension(2000, 200));
+
+        JTabbedPane tabbedPane = new JTabbedPane();
         JFrame frame = new JFrame();
         
         // Create the main panel containing all of the other panels.
         JPanel mainPanel = new JPanel();
         JPanel secondaryPanel = new JPanel();
+
         mainPanel.add(chartPanel1);
         mainPanel.add(motorPanel1);
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        setContentPane(mainPanel);
+
         secondaryPanel.add(chartPanel2);
         secondaryPanel.add(motorPanel2);
         secondaryPanel.setLayout(new BoxLayout(secondaryPanel, BoxLayout.Y_AXIS));
-        setContentPane(mainPanel);
+        setContentPane(secondaryPanel);
 
         tabbedPane.add("side1", mainPanel);
-        tabbedPane.add("side", mainPanel);
+        tabbedPane.add("side2", secondaryPanel);
 
         frame.getContentPane().add(tabbedPane);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.setSize(640, 480);
+        frame.setSize(1200, 800);
         frame.setLocationByPlatform(true);
         frame.setVisible(true);
 	}
@@ -101,6 +106,7 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 chartPanel.setChart(createChart(firstSide));
+                
             }
         });
 
@@ -272,10 +278,10 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
 			ImpulseResponseChart example = new ImpulseResponseChart("PID Lab");
-			example.setSize(1200, 800);
-			example.setLocationRelativeTo(null);
-			example.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-			example.setVisible(true);
+			// example.setSize(1200, 800);
+			// example.setLocationRelativeTo(null);
+			// example.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+			// example.setVisible(true);
 		});
 	}
 }
