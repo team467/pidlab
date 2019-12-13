@@ -52,22 +52,23 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
     private JTextField deadField = new JTextField("0.2", 4);
     private JTextField plotTimeField = new JTextField("10", 4);
 
-    public ImpulseResponseChart(String title) {
+    public ImpulseResponseChart(String title, Boolean firstSide) {
 		super(title);
 
         // Create viewer panel in which to display the chart. 1 and 2 are sides according to the leftmost(1) speed and position
-        ChartPanel chartPanel1 = new ChartPanel(createChart(true));
-        ChartPanel chartPanel2 = new ChartPanel(createChart(false));
+        ChartPanel chartPanel1 = new ChartPanel(createChart(firstSide));
 
         // Create controller panels where we read input values from.
-        JPanel motorPanel1 = createMotorPanel(chartPanel1, true);
-        JPanel motorPanel2 = createMotorPanel (chartPanel2, false);
+        JPanel motorPanel1 = createMotorPanel(chartPanel1, firstSide);
         
         motorPanel1.setMaximumSize(new Dimension(2000, 200));
-        motorPanel2.setMaximumSize(new Dimension(2000, 200));
 
-        JTabbedPane tabbedPane = new JTabbedPane();
-        JFrame frame = new JFrame();
+
+        JTabbedPane tabbedPane1 = new JTabbedPane();
+
+
+        JFrame frame1 = new JFrame();
+
         
         // Create the main panel containing all of the other panels.
         JPanel mainPanel = new JPanel();
@@ -78,19 +79,6 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         setContentPane(mainPanel);
 
-        secondaryPanel.add(chartPanel2);
-        secondaryPanel.add(motorPanel2);
-        secondaryPanel.setLayout(new BoxLayout(secondaryPanel, BoxLayout.Y_AXIS));
-        setContentPane(secondaryPanel);
-
-        tabbedPane.add("side1", mainPanel);
-        tabbedPane.add("side2", secondaryPanel);
-
-        frame.getContentPane().add(tabbedPane);
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.setSize(1200, 800);
-        frame.setLocationByPlatform(true);
-        frame.setVisible(true);
 	}
 
     private JPanel initTextFieldPanel(String name, JTextField field, ChartPanel chartPanel, Boolean firstSide) {
@@ -277,11 +265,20 @@ class ImpulseResponseChart extends JFrame { //implements ActionListener {
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
-			ImpulseResponseChart example = new ImpulseResponseChart("PID Lab");
-			// example.setSize(1200, 800);
-			// example.setLocationRelativeTo(null);
-			// example.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-			// example.setVisible(true);
-		});
+			ImpulseResponseChart example = new ImpulseResponseChart("PID Lab side 1", true);
+			example.setSize(1200, 800);
+			example.setLocationRelativeTo(null);
+			example.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+			example.setVisible(true);
+        });
+
+        SwingUtilities.invokeLater(() -> {
+			ImpulseResponseChart example = new ImpulseResponseChart("PID Lab side 2", false);
+			example.setSize(1200, 800);
+			example.setLocationRelativeTo(null);
+			example.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+			example.setVisible(true);
+        });
+        
 	}
 }
