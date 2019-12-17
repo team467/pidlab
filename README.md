@@ -3,9 +3,7 @@
     <p><b>Table of Contents</b></p>
     <ul>
         <li><a href="#setup">Setup</a></li>
-        <li>Use</li>
         <li><a href="#pidedit">How to edit PIDs</a></li>
-        <li>What does this mean?</li>
         <li><a href="#tFormat"> Telemetry format</a></li>
     </ul>
 </header>
