@@ -1,6 +1,6 @@
 <header>
     <h1>PID LAB </h1>
-    <p><b><u>Table of Contents</u></b></p>
+    <p><b>Table of Contents</b></p>
     <ul>
         <li><a href="#setup">Setup</a></li>
         <li>Use</li>
