@@ -20,11 +20,9 @@
     <h2 id="pidedit"> How to edit PIDs</h2>
     <hr>
     <b> pt. I </b>
-    <p>In order to get this lab working you need to the correct impulse variables from the the Impulse Response charts. Run ImpulseResponseChart.java and 2 screens will pop up. Each screen corresponds to a side which you should have determined in the telemetry formatting step. Change the variables in the "Motor Properties" box accordlingly so that the recorded speed and position lines match up with the simulated lines. Write down or memorize the values that you have determined for the motor properties.</p>
-
+    <p>In order to get this lab working you need to the correct impulse variables from the the Impulse Response charts. Run ImpulseResponseChart.java and 2 screens will pop up. Each screen corresponds to a side which you should have determined in the telemetry formatting step. Change the variables in the "Motor Properties" box accordlingly so that the recorded speed and position lines match up with the simulated lines. Write down or memorize the values that you have determined for the motor properties. <p>
     <b>pt. II</b>
-    <p>Now that you have the motor properties variables you should run PIDResponseChart.java plug in your determined property variables in the boxes from before. Adjust the plot settings accordingly. Now you are all set to tune the PIDs!</p>
-
+    <p>Now that you have the motor properties variables you should run PIDResponseChart.java plug in your determined property variables in the boxes from before. Adjust the plot settings accordingly. Now you are all set to tune the PIDs!</P>
     <i>IMPORTANT: each side could have different motor qualities so make sure you do both sides</i>
 <br />
     <h2 id="tFormat">Telemetry format </h2>
